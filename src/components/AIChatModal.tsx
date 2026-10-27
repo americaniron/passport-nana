@@ -30,7 +30,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        "Hello and welcome to **Kweenz Dream💭**! I'm Nana's AI Care Concierge. Whether you need 24/7 emergency babysitting, flight accompaniment with our signature Passport Nanny service, school pickup, or a gentle wash & retwist for locs, I'm here to help. What questions can I answer for your family today?",
+        "Hello and welcome to **Passport Nana**! I'm Nana's AI Care Concierge. Whether you need 24/7 emergency babysitting, flight accompaniment with our signature Passport Nanny service, school pickup, or a gentle wash & retwist for locs, I'm here to help. What questions can I answer for your family today?",
       timestamp: 'Just now',
     },
   ]);

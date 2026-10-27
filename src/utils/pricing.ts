@@ -1,5 +1,5 @@
 /**
- * Pure business logic for Kweenz Dream pricing, deposits, and validations.
+ * Pure business logic for Passport Nana pricing, deposits, and validations.
  */
 
 export interface PricingInput {
@@ -110,7 +110,7 @@ export function formatCurrency(amount: number): string {
 
 export function generateBookingReference(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let ref = 'KD-';
+  let ref = 'PN-';
   for (let i = 0; i < 6; i++) {
     ref += chars.charAt(Math.floor(Math.random() * chars.length));
   }

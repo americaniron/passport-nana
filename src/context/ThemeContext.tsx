@@ -13,7 +13,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('kweenz_theme');
+      const saved = localStorage.getItem('passport_nana_theme');
       if (saved === 'light' || saved === 'dark') return saved;
     }
     return 'dark'; // Default dreamy brand mode
@@ -28,7 +28,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       root.classList.remove('dark');
       root.classList.add('light');
     }
-    localStorage.setItem('kweenz_theme', theme);
+    localStorage.setItem('passport_nana_theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {

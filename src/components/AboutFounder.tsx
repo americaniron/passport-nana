@@ -32,7 +32,7 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
             >
               <img
                 src="/assets/aistudio/LYZRLDMS4X5O44JOOXY3YY7K_5185ff1e.webp"
-                alt="Ken'nyzhae Nathaniel with Kweenz Dream Little Ones"
+                alt="Ken'nyzhae Nathaniel with Passport Nana Little Ones"
                 className="w-full h-auto object-cover"
               />
               <div
@@ -78,7 +78,7 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
                 isDark ? 'text-slate-300' : 'text-[#334155]'
               }`}
             >
-              Founded by <strong>Ken'nyzhae Nathaniel</strong>, Kweenz Dream was born from a deep conviction: every child deserves attentive, joyful, and emotionally enriching care, whether at home, at school dismissal, on long flights, or in the styling chair.
+              Founded by <strong>Ken'nyzhae Nathaniel</strong>, Passport Nana was born from a deep conviction: every child deserves attentive, joyful, and emotionally enriching care, whether at home, at school dismissal, on long flights, or in the styling chair.
             </p>
 
             <p

@@ -75,10 +75,10 @@ export const Hero: React.FC<HeroProps> = ({
                   Dreams Take Flight
                 </span>
               </h1>
-              <p className="text-xl sm:text-2xl font-bold text-[#dfb75c] font-brand flex items-center gap-2">
-                <span>Kweenz Dream💭</span>
+              <p className="text-xl sm:text-2xl font-bold text-[#dfb75c] font-serif flex items-center gap-2">
+                <span>Passport Nana</span>
                 <span className={isDark ? 'text-slate-300 text-sm font-normal' : 'text-slate-600 text-sm font-normal'}>
-                  founded by Ken'nyzhae Nathaniel ("Your Favorite Nanny")
+                  founded by Ken'nyzhae Nathaniel ("Luxury Care That Travels")
                 </span>
               </p>
             </div>
@@ -132,10 +132,10 @@ export const Hero: React.FC<HeroProps> = ({
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <button
                 onClick={() => onOpenBooking()}
-                className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-extrabold text-sm sm:text-base shadow-xl shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
+                className="flex items-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-black text-sm sm:text-base shadow-xl shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
               >
                 <Calendar className="w-5 h-5 text-[#041226]" />
-                <span>Book Appointment</span>
+                <span>Book Nana Now</span>
               </button>
 
               <button
@@ -199,7 +199,7 @@ export const Hero: React.FC<HeroProps> = ({
                 <div className="relative h-96 overflow-hidden">
                   <img
                     src="/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp"
-                    alt="Kweenz Dream Happy Children and Incredibeingz Flying High"
+                    alt="Passport Nana Happy Children and IncrediBeingz Flying High"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div

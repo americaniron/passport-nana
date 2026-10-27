@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, Mail, MessageSquare, Clock, MapPin, Heart, Sparkles, Send, CheckCircle2 } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { PassportNanaLogo } from './PassportNanaLogo.tsx';
 
 interface FooterProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -73,19 +74,14 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenChat }) => 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 text-left">
           {/* Brand Info */}
           <div className="lg:col-span-4 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-black font-brand text-transparent bg-clip-text bg-gradient-to-r from-[#f3d078] via-[#dfb75c] to-[#c59b27]">
-                Kweenz Dream
-              </span>
-              <span className="text-xl">💭</span>
-            </div>
+            <PassportNanaLogo variant="full" size="md" />
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Founded by Ken'nyzhae Nathaniel ("Nana", "Your Favorite Nanny"). Dedicated to joyful, certified childcare, VIP travel accompaniment, and nourishing loc retwisting.
+              Founded by Ken'nyzhae Nathaniel ("Passport Nana"). Dedicated to joyful, certified childcare, VIP travel flight accompaniment, and nourishing loc retwisting.
             </p>
             <div className="text-xs text-slate-400 space-y-1">
               <p className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-[#dfb75c] shrink-0" />
-                <span>San Francisco Bay Area • Tampa FL • Worldwide Travel</span>
+                <span>Miami • Charlotte • Atlanta • New York • Worldwide Travel</span>
               </p>
               <p className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-[#dfb75c] shrink-0" />
@@ -234,7 +230,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenChat }) => 
 
         {/* Bottom bar */}
         <div className="pt-10 mt-10 border-t border-[#d4af37]/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 text-center sm:text-left">
-          <p>© 2026 Kweenz Dream💭 • All Rights Reserved.</p>
+          <p>© 2026 Passport Nana • Luxury Care That Travels! • All Rights Reserved.</p>
           <div className="flex items-center gap-4">
             <button
               onClick={onOpenChat}

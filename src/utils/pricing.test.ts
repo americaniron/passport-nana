@@ -60,9 +60,9 @@ test('Currency formatter outputs clean dollar format', () => {
   assert.equal(formatCurrency(0), '$0');
 });
 
-test('Booking reference has KD- prefix and correct length', () => {
+test('Booking reference has PN- prefix and correct length', () => {
   const ref = generateBookingReference();
-  assert.match(ref, /^KD-[A-Z0-9]{6}$/);
+  assert.match(ref, /^PN-[A-Z0-9]{6}$/);
 });
 
 test('Booking validation correctly catches missing or invalid fields', () => {

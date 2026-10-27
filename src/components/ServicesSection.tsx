@@ -204,10 +204,10 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
 
                     <button
                       onClick={() => onOpenBooking(service.id)}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] text-xs font-bold shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                      className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] text-xs font-bold shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>Book</span>
+                      <span>Book Nana Now</span>
                     </button>
                   </div>
                 </div>
@@ -358,7 +358,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-sm shadow-lg shadow-amber-500/25 cursor-pointer"
               >
                 <Calendar className="w-4 h-4" />
-                <span>Book This Service</span>
+                <span>Book Nana Now</span>
               </button>
             </div>
           </div>

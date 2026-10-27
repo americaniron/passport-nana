@@ -292,10 +292,10 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                     childrenCount,
                   })
                 }
-                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-black text-sm shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-[#041226]" />
-                <span>Reserve with This Estimate</span>
+                <span>Book Nana Now (With This Estimate)</span>
                 <ArrowRight className="w-4 h-4 text-[#041226]" />
               </button>
             </div>

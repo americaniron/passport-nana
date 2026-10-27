@@ -8,6 +8,9 @@ import {
   validateBookingForm,
 } from '../utils/pricing.ts';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
+import { OwnerAvailabilityCalendar } from './OwnerAvailabilityCalendar.tsx';
+import { PassportNanaLogo } from './PassportNanaLogo.tsx';
 import {
   X,
   Calendar,
@@ -23,6 +26,10 @@ import {
   FileText,
   Sparkles,
   Heart,
+  Tag,
+  Check,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 interface BookingModalProps {
@@ -41,6 +48,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialChildrenCount,
 }) => {
   const { isDark } = useTheme();
+  const { siteCopy, addBooking, applyPromoCode, getAvailabilityForDate } = useBusiness();
+
   const [serviceId, setServiceId] = useState<string>(initialServiceId || 'nanny-services');
   const [clientName, setClientName] = useState<string>('');
   const [clientPhone, setClientPhone] = useState<string>('');
@@ -56,6 +65,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [confirmedBooking, setConfirmedBooking] = useState<BookingRequest | null>(null);
 
+  // Calendar visibility toggle
+  const [showCalendar, setShowCalendar] = useState<boolean>(true);
+
+  // Promo code support
+  const [promoInput, setPromoInput] = useState<string>('');
+  const [promoMessage, setPromoMessage] = useState<string>('');
+  const [promoDiscount, setPromoDiscount] = useState<number>(0);
+  const [appliedPromoCode, setAppliedPromoCode] = useState<string>('');
+
   useEffect(() => {
     if (initialServiceId) setServiceId(initialServiceId);
     if (initialHours) setHours(initialHours);
@@ -70,7 +88,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   const minHours = currentService.minHours || 4;
   const isHourly = currentService.priceType === 'hourly';
 
-  const pricing = calculateServicePrice({
+  const rawPricing = calculateServicePrice({
     basePrice: currentService.basePrice,
     priceType: currentService.priceType,
     hours: isHourly ? hours : currentService.defaultDurationHours || 4,
@@ -78,6 +96,26 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     childrenCount,
     additionalChildRate: currentService.additionalChildRate || 0,
   });
+
+  // Calculate final discounted total
+  const finalTotal = Math.max(0, rawPricing.total - promoDiscount);
+  const finalDeposit = Math.min(rawPricing.deposit, finalTotal);
+
+  const handleApplyPromo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!promoInput.trim()) return;
+
+    const result = applyPromoCode(promoInput.trim(), rawPricing.total);
+    if (result.valid) {
+      setPromoDiscount(result.discountAmount);
+      setAppliedPromoCode(promoInput.trim().toUpperCase());
+      setPromoMessage(result.message);
+    } else {
+      setPromoDiscount(0);
+      setAppliedPromoCode('');
+      setPromoMessage(result.message);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,15 +150,34 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       startTime,
       hours: isHourly ? hours : currentService.defaultDurationHours || 4,
       childrenCount,
-      childrenDetails,
-      locationAddress: locationAddress || 'Family Home / On-Call Location',
-      specialRequests,
-      estimatedTotal: pricing.total,
-      requiredDeposit: pricing.deposit,
+      childrenDetails: childrenDetails || specialRequests,
+      locationAddress: locationAddress || 'Family Residence / Hotel / Airport Location',
+      specialRequests: `${specialRequests}${appliedPromoCode ? ` [Promo applied: ${appliedPromoCode} (-$${promoDiscount})]` : ''}`,
+      estimatedTotal: finalTotal,
+      requiredDeposit: finalDeposit,
       status: 'confirmed',
       createdAt: new Date().toISOString(),
       confirmationCode: refCode,
     };
+
+    // Also persist into BusinessContext so Client Portal and Admin Dashboard see it immediately
+    addBooking({
+      confirmationCode: refCode,
+      serviceId: currentService.id,
+      serviceTitle: currentService.title,
+      clientName,
+      clientPhone,
+      clientEmail,
+      serviceDate,
+      startTime,
+      hours: isHourly ? hours : currentService.defaultDurationHours || 4,
+      childrenCount,
+      childrenDetails: childrenDetails || specialRequests,
+      locationAddress: locationAddress || 'Family Residence / Hotel / Airport Location',
+      specialRequests: `${specialRequests}${appliedPromoCode ? ` [Promo: ${appliedPromoCode}]` : ''}`,
+      estimatedTotal: finalTotal,
+      requiredDeposit: finalDeposit,
+    });
 
     setTimeout(() => {
       setConfirmedBooking(newBooking);
@@ -134,12 +191,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     // Create standard .ics calendar invite
     const icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
-PRODID:-//Kweenz Dream//Appointment//EN
+PRODID:-//Passport Nana//Appointment//EN
 CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
-SUMMARY:Kweenz Dream: ${confirmedBooking.serviceTitle}
-DESCRIPTION:Care appointment with Ken'nyzhae Nathaniel ("Passport Nanny")\\nRef Code: ${confirmedBooking.confirmationCode}\\nPhone: 305-409-6788
+SUMMARY:Passport Nana: ${confirmedBooking.serviceTitle}
+DESCRIPTION:Care appointment with Ken'nyzhae Nathaniel ("Passport Nana")\\nRef Code: ${confirmedBooking.confirmationCode}\\nPhone: ${siteCopy.businessPhone}
 LOCATION:${confirmedBooking.locationAddress}
 STATUS:CONFIRMED
 END:VEVENT
@@ -149,19 +206,21 @@ END:VCALENDAR`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `kweenz-dream-appointment-${confirmedBooking.confirmationCode}.ics`);
+    link.setAttribute('download', `passport-nana-appointment-${confirmedBooking.confirmationCode}.ics`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const selectedDayStatus = serviceDate ? getAvailabilityForDate(serviceDate) : null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
       <div
-        className={`relative w-full max-w-3xl my-8 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all border-2 ${
+        className={`relative w-full max-w-3xl my-6 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all border-2 ${
           isDark
-            ? 'bg-[#041226] border-[#d4af37]/60 text-white'
-            : 'bg-white border-[#d4af37]/50 text-[#04142b]'
+            ? 'bg-[#041226] border-[#d4af37]/60 text-white shadow-black/80'
+            : 'bg-white border-[#d4af37]/50 text-[#04142b] shadow-amber-950/20'
         }`}
       >
         <button
@@ -188,7 +247,7 @@ END:VCALENDAR`;
                 Booking Confirmed • Luxury Care That Travels!
               </span>
               <h3 className="text-2xl sm:text-3xl font-black font-display">
-                You're Scheduled with Nana!
+                You're Scheduled with Passport Nana!
               </h3>
               <p className="text-sm opacity-90 max-w-lg mx-auto">
                 Thank you for securing your booking. Ken’nyzhae will contact you at{' '}
@@ -198,9 +257,11 @@ END:VCALENDAR`;
             </div>
 
             {/* Reference Badge */}
-            <div className={`p-5 rounded-2xl border-2 max-w-md mx-auto space-y-2 text-left ${
-              isDark ? 'bg-[#061833] border-[#d4af37]/50' : 'bg-[#faf8f5] border-[#d4af37]/45'
-            }`}>
+            <div
+              className={`p-5 rounded-2xl border-2 max-w-md mx-auto space-y-2 text-left ${
+                isDark ? 'bg-[#061833] border-[#d4af37]/50' : 'bg-[#faf8f5] border-[#d4af37]/45'
+              }`}
+            >
               <div className="text-xs uppercase font-bold text-[#dfb75c]">Booking Reference</div>
               <div className="text-2xl font-black font-mono text-[#dfb75c] tracking-wider">
                 {confirmedBooking.confirmationCode}
@@ -237,11 +298,11 @@ END:VCALENDAR`;
               </button>
 
               <a
-                href="sms:3054096788"
+                href={`sms:${siteCopy.businessPhone.replace(/\D/g, '')}`}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-xs shadow-md"
               >
                 <Phone className="w-4 h-4" />
-                <span>Text Nana Now (305-409-6788)</span>
+                <span>Text Nana Now ({siteCopy.businessPhone})</span>
               </a>
 
               <button
@@ -263,21 +324,26 @@ END:VCALENDAR`;
           /* Form State */
           <form onSubmit={handleSubmit} className="space-y-6 text-left">
             <div className="space-y-1">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#dfb75c]">
-                Reservation & Appointment
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black font-display">
-                Book with Kweenz Dream💭
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#dfb75c]">
+                  Reservation & Care Request
+                </span>
+                <span className="text-xs text-[#d4af37]">✨</span>
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black font-serif tracking-tight flex items-center gap-2">
+                <span>Book Nana Now</span>
               </h3>
               <p className="text-xs sm:text-sm opacity-85">
-                24/7 on-call dispatch. Submit your request and Nana will secure your time slot.
+                24/7 on-call dispatch & travel accompaniment. Select your date on Nana's live schedule below.
               </p>
             </div>
 
             {/* Service & Rate Preview Strip */}
-            <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${
-              isDark ? 'bg-[#061833] border-[#d4af37]/35' : 'bg-[#faf8f5] border-[#d4af37]/35'
-            }`}>
+            <div
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${
+                isDark ? 'bg-[#061833] border-[#d4af37]/35' : 'bg-[#faf8f5] border-[#d4af37]/35'
+              }`}
+            >
               <div className="w-full sm:w-2/3">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-[#dfb75c] mb-1">
                   Selected Service
@@ -293,11 +359,17 @@ END:VCALENDAR`;
                     }
                   }}
                   className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] font-semibold ${
-                    isDark ? 'bg-[#041226] border-[#d4af37]/40 text-white' : 'bg-white border-[#d4af37]/40 text-[#04142b]'
+                    isDark
+                      ? 'bg-[#041226] border-[#d4af37]/40 text-white'
+                      : 'bg-white border-[#d4af37]/40 text-[#04142b]'
                   }`}
                 >
                   {SERVICES.map((s) => (
-                    <option key={s.id} value={s.id} className={isDark ? 'bg-[#041226] text-white' : 'bg-white text-[#04142b]'}>
+                    <option
+                      key={s.id}
+                      value={s.id}
+                      className={isDark ? 'bg-[#041226] text-white' : 'bg-white text-[#04142b]'}
+                    >
                       {s.title} — {s.durationLabel}
                     </option>
                   ))}
@@ -309,12 +381,52 @@ END:VCALENDAR`;
                   Estimate / Slot Deposit
                 </div>
                 <div className="text-lg font-black text-[#dfb75c]">
-                  {formatCurrency(pricing.total)}{' '}
-                  <span className="text-xs font-normal opacity-80">
-                    ({formatCurrency(pricing.deposit)} deposit)
+                  {formatCurrency(finalTotal)}{' '}
+                  {promoDiscount > 0 && (
+                    <span className="text-xs text-emerald-400 font-bold block">
+                      (-{formatCurrency(promoDiscount)} Promo Applied!)
+                    </span>
+                  )}
+                  <span className="text-xs font-normal opacity-80 block">
+                    ({formatCurrency(finalDeposit)} deposit)
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* OWNER AVAILABILITY CALENDAR DISPLAY - DIRECT REQUIREMENT #5 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-[#d4af37]" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#d4af37]">
+                    Nana's Live Availability Calendar
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  className="text-xs font-semibold text-[#d4af37] hover:underline flex items-center gap-1"
+                >
+                  <span>{showCalendar ? 'Collapse Calendar' : 'Expand Calendar'}</span>
+                  {showCalendar ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {showCalendar && (
+                <div className="mt-1">
+                  <OwnerAvailabilityCalendar
+                    selectedDate={serviceDate}
+                    onSelectDate={(selected) => {
+                      setServiceDate(selected);
+                      if (formErrors.serviceDate) {
+                        setFormErrors((prev) => ({ ...prev, serviceDate: '' }));
+                      }
+                    }}
+                    compact={true}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Inputs Grid */}
@@ -332,7 +444,9 @@ END:VCALENDAR`;
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="e.g. Alexis Johnson"
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   />
                 </div>
@@ -354,7 +468,9 @@ END:VCALENDAR`;
                     onChange={(e) => setClientPhone(e.target.value)}
                     placeholder="e.g. 305-409-6788"
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   />
                 </div>
@@ -376,7 +492,9 @@ END:VCALENDAR`;
                     onChange={(e) => setClientEmail(e.target.value)}
                     placeholder="e.g. alexis@example.com"
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   />
                 </div>
@@ -385,10 +503,10 @@ END:VCALENDAR`;
                 )}
               </div>
 
-              {/* Service Date */}
+              {/* Service Date Input */}
               <div>
                 <label className="block text-xs font-bold mb-1 opacity-90">
-                  Service Date *
+                  Service Date * (or click on calendar above)
                 </label>
                 <div className="relative">
                   <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
@@ -397,7 +515,9 @@ END:VCALENDAR`;
                     value={serviceDate}
                     onChange={(e) => setServiceDate(e.target.value)}
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   />
                 </div>
@@ -417,16 +537,19 @@ END:VCALENDAR`;
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                     className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   >
-                    <option value="07:00 AM">07:00 AM (Early Morning)</option>
+                    <option value="07:00 AM">07:00 AM (Early Morning Care)</option>
                     <option value="09:00 AM">09:00 AM (Morning Care)</option>
                     <option value="12:00 PM">12:00 PM (Midday)</option>
-                    <option value="03:00 PM">03:00 PM (School Dismissal)</option>
+                    <option value="03:00 PM">03:00 PM (School Dismissal Pickup)</option>
                     <option value="05:00 PM">05:00 PM (Evening / Dinner)</option>
                     <option value="07:00 PM">07:00 PM (Date Night / Bedtime)</option>
                     <option value="10:00 PM">10:00 PM (Overnight Support)</option>
+                    <option value="Flight Departure / Travel Check-In">Flight Departure / Travel Check-In</option>
                     <option value="On-Call Immediate">On-Call Immediate (ASAP)</option>
                   </select>
                 </div>
@@ -442,10 +565,12 @@ END:VCALENDAR`;
                     value={hours}
                     onChange={(e) => setHours(parseInt(e.target.value, 10))}
                     className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] font-semibold ${
-                      isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                     }`}
                   >
-                    {[4, 5, 6, 7, 8, 10, 12, 16].map((h) => (
+                    {[4, 5, 6, 7, 8, 10, 12, 16, 24].map((h) => (
                       <option key={h} value={h}>
                         {h} Hours {h === minHours ? `(Minimum)` : ''}
                       </option>
@@ -469,7 +594,9 @@ END:VCALENDAR`;
                       value={childrenCount}
                       onChange={(e) => setChildrenCount(parseInt(e.target.value, 10))}
                       className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                        isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                        isDark
+                          ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                          : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                       }`}
                     >
                       <option value="1">1 Child</option>
@@ -493,12 +620,53 @@ END:VCALENDAR`;
                   type="text"
                   value={locationAddress}
                   onChange={(e) => setLocationAddress(e.target.value)}
-                  placeholder="e.g. 120 Opera Plaza, San Francisco, CA or Hotel Room # / Airport flight #"
+                  placeholder="e.g. 120 Ocean Drive, Miami FL or Airport Flight # / Hotel Room"
                   className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                    isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                    isDark
+                      ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                   }`}
                 />
               </div>
+            </div>
+
+            {/* Promo Code Input Strip */}
+            <div
+              className={`p-3 rounded-2xl border flex flex-col sm:flex-row items-center gap-2 ${
+                isDark ? 'bg-[#061833]/60 border-white/10' : 'bg-slate-50 border-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#d4af37]">
+                <Tag className="w-4 h-4" />
+                <span>Promo Code:</span>
+              </div>
+              <div className="flex-1 flex gap-2 w-full">
+                <input
+                  type="text"
+                  value={promoInput}
+                  onChange={(e) => setPromoInput(e.target.value)}
+                  placeholder="e.g. PASSPORT50, WELCOME20, MEETFREE"
+                  className={`flex-1 px-3 py-1.5 rounded-xl border text-xs uppercase font-mono ${
+                    isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  className="px-3.5 py-1.5 rounded-xl bg-[#d4af37] text-[#041226] font-bold text-xs hover:scale-105 transition-all"
+                >
+                  Apply
+                </button>
+              </div>
+              {promoMessage && (
+                <span
+                  className={`text-xs font-semibold ${
+                    promoDiscount > 0 ? 'text-emerald-400' : 'text-rose-400'
+                  }`}
+                >
+                  {promoMessage}
+                </span>
+              )}
             </div>
 
             {/* Children details / special notes */}
@@ -512,19 +680,21 @@ END:VCALENDAR`;
                 onChange={(e) => setSpecialRequests(e.target.value)}
                 placeholder="e.g. Maya (age 4) has a peanut allergy; need bedtime routine completed by 8:30 PM. Or loc length mid-back for retwist."
                 className={`w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
-                  isDark ? 'bg-[#061833] border-[#d4af37]/35 text-white' : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                  isDark
+                    ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                    : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                 }`}
               />
             </div>
 
-            {/* Submission CTA */}
-            <div className="pt-2 flex items-center justify-between gap-4">
+            {/* Submission CTA - REQUIREMENT #6: "Book Nana Now" */}
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs opacity-80 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-[#dfb75c]" />
-                <span>Zero hassle • Verified confirmation</span>
+                <span>Zero hassle • Instant scheduling with Nana Ken’nyzhae</span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 <button
                   type="button"
                   onClick={onClose}
@@ -539,9 +709,9 @@ END:VCALENDAR`;
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-sm shadow-lg shadow-amber-500/25 disabled:opacity-50 cursor-pointer"
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-black text-sm shadow-lg shadow-amber-500/25 disabled:opacity-50 cursor-pointer hover:scale-105 active:scale-95 transition-all"
                 >
-                  {isSubmitting ? 'Confirming...' : 'Confirm Reservation'}
+                  {isSubmitting ? 'Confirming...' : 'Book Nana Now'}
                 </button>
               </div>
             </div>
