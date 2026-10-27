@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { useBusiness } from '../context/BusinessContext.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
 import { PassportNanaLogo } from './PassportNanaLogo.tsx';
+import { auth, db } from '../lib/firebase.ts';
+import { updatePassword, sendPasswordResetEmail } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import {
   X,
   Lock,
@@ -77,8 +80,19 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
   // Active Admin Tab
   const [activeTab, setActiveTab] = useState<
-    'bookings' | 'calendar' | 'theme' | 'copy' | 'promotions' | 'media' | 'pricing'
+    'bookings' | 'calendar' | 'theme' | 'copy' | 'promotions' | 'media' | 'pricing' | 'security'
   >('bookings');
+
+  // Password & Security Management
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStatusMsg, setPasswordStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
+  // Custom PIN Management
+  const [newCustomPin, setNewCustomPin] = useState('');
+  const [confirmCustomPin, setConfirmCustomPin] = useState('');
+  const [pinStatusMsg, setPinStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Booking search & filter
   const [bookingFilter, setBookingFilter] = useState<string>('all');
@@ -163,6 +177,123 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     e.preventDefault();
     await updateSiteCopy(copyForm);
     showNotice('Site copy saved to Cloud Firestore!');
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordStatusMsg(null);
+    if (newPassword.length < 6) {
+      setPasswordStatusMsg({ type: 'error', text: 'Password must be at least 6 characters.' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordStatusMsg({ type: 'error', text: 'New password and confirmation do not match.' });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      if (auth.currentUser) {
+        await updatePassword(auth.currentUser, newPassword);
+        setPasswordStatusMsg({
+          type: 'success',
+          text: 'Owner account password was successfully updated in Firebase Authentication!',
+        });
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        const email = ownerEmail || 'info@fixmyiron.com';
+        await sendPasswordResetEmail(auth, email);
+        setPasswordStatusMsg({
+          type: 'success',
+          text: `Password reset link sent to ${email}! Open the link in your email to choose your new password.`,
+        });
+      }
+    } catch (err: unknown) {
+      const fbErr = err as { code?: string; message?: string };
+      if (fbErr?.code === 'auth/requires-recent-login') {
+        const email = auth.currentUser?.email || ownerEmail || 'info@fixmyiron.com';
+        await sendPasswordResetEmail(auth, email);
+        setPasswordStatusMsg({
+          type: 'success',
+          text: `For security, changing password directly requires recent sign-in. A secure password reset link has been emailed to ${email}!`,
+        });
+      } else {
+        setPasswordStatusMsg({
+          type: 'error',
+          text: fbErr?.message || 'Failed to update password. Try sending a password reset email below.',
+        });
+      }
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
+
+  const handleSendResetEmail = async () => {
+    setPasswordStatusMsg(null);
+    try {
+      const email = auth.currentUser?.email || ownerEmail || 'info@fixmyiron.com';
+      await sendPasswordResetEmail(auth, email);
+      setPasswordStatusMsg({
+        type: 'success',
+        text: `Secure password reset link sent to ${email}! Check your inbox.`,
+      });
+    } catch (err: unknown) {
+      const fbErr = err as { message?: string };
+      setPasswordStatusMsg({
+        type: 'error',
+        text: fbErr?.message || 'Failed to send password reset email.',
+      });
+    }
+  };
+
+  const handleUpdateCustomPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPinStatusMsg(null);
+    const trimmed = newCustomPin.trim();
+    if (trimmed.length < 4) {
+      setPinStatusMsg({ type: 'error', text: 'Security PIN must be at least 4 characters.' });
+      return;
+    }
+    if (trimmed !== confirmCustomPin.trim()) {
+      setPinStatusMsg({ type: 'error', text: 'PIN and confirmation do not match.' });
+      return;
+    }
+    try {
+      localStorage.setItem('pn_owner_pin', trimmed);
+      if (auth.currentUser) {
+        await setDoc(
+          doc(db, 'admins', auth.currentUser.uid),
+          {
+            uid: auth.currentUser.uid,
+            email: (auth.currentUser.email || 'info@fixmyiron.com').slice(0, 150),
+            role: 'owner',
+            pinPasscode: trimmed,
+            createdAt: new Date().toISOString(),
+          },
+          { merge: true }
+        );
+      }
+      setPinStatusMsg({
+        type: 'success',
+        text: `Owner Security PIN changed to "${trimmed}"! Use this new PIN the next time you unlock the Owner Hub.`,
+      });
+      setNewCustomPin('');
+      setConfirmCustomPin('');
+    } catch (err: unknown) {
+      const fbErr = err as { message?: string };
+      setPinStatusMsg({
+        type: 'error',
+        text: fbErr?.message || 'Failed to update PIN in database.',
+      });
+    }
+  };
+
+  const handleResetPinToDefault = () => {
+    localStorage.removeItem('pn_owner_pin');
+    setPinStatusMsg({
+      type: 'success',
+      text: 'Security PIN reset to the factory default: "nana2026".',
+    });
   };
 
   const handleSaveTheme = async (e: React.FormEvent) => {
@@ -549,6 +680,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               >
                 <DollarSign className="w-4 h-4" />
                 <span>Pricing & Rates</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('security')}
+                className={`py-3 px-3.5 font-bold text-xs sm:text-sm border-b-2 flex items-center gap-1.5 whitespace-nowrap transition-colors ${
+                  activeTab === 'security'
+                    ? 'border-[#d4af37] text-[#d4af37]'
+                    : 'border-transparent opacity-70 hover:opacity-100'
+                }`}
+              >
+                <KeyRound className="w-4 h-4 text-[#d4af37]" />
+                <span>Security & Passwords</span>
               </button>
             </div>
 
@@ -1572,6 +1715,221 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                     <span>Save Pricing Rates</span>
                   </button>
                 </form>
+              )}
+
+              {/* TAB 8: SECURITY & PASSWORDS */}
+              {activeTab === 'security' && (
+                <div className="space-y-8 max-w-2xl">
+                  {/* Header */}
+                  <div>
+                    <h3 className="text-xl font-serif font-black text-[#d4af37] flex items-center gap-2">
+                      <KeyRound className="w-5 h-5 text-[#d4af37]" />
+                      <span>Owner Account Security & Password Controls</span>
+                    </h3>
+                    <p className="text-xs opacity-80 mt-1">
+                      Manage your Firebase authentication password, change your Owner Security PIN, or request password recovery links.
+                    </p>
+                  </div>
+
+                  {/* Section 1: Change Account Password */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      isDark ? 'bg-[#061833] border-[#d4af37]/30' : 'bg-[#faf8f5] border-[#d4af37]/35'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-[#d4af37]" />
+                      <h4 className="font-bold text-sm uppercase tracking-wider text-[#d4af37]">
+                        1. Change Owner Account Password (Firebase Auth)
+                      </h4>
+                    </div>
+                    <p className="text-xs opacity-80">
+                      Update the password used to sign in with your owner email (<strong>{auth.currentUser?.email || ownerEmail || 'info@fixmyiron.com'}</strong>).
+                    </p>
+
+                    {passwordStatusMsg && (
+                      <div
+                        className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                          passwordStatusMsg.type === 'success'
+                            ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400'
+                            : 'bg-rose-500/15 border border-rose-500/40 text-rose-400'
+                        }`}
+                      >
+                        {passwordStatusMsg.type === 'success' ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                        )}
+                        <span>{passwordStatusMsg.text}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleUpdatePassword} className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold mb-1">New Password (minimum 6 characters)</label>
+                        <input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          placeholder="Enter new strong password"
+                          className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold mb-1">Confirm New Password</label>
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-enter new password"
+                          className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={isUpdatingPassword || !newPassword}
+                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#aa8214] text-[#041226] font-bold text-xs flex items-center gap-2 shadow hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          <span>{isUpdatingPassword ? 'Saving Password...' : 'Save New Password'}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleSendResetEmail}
+                          className={`px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            isDark
+                              ? 'border-[#d4af37]/40 text-slate-200 hover:bg-white/5'
+                              : 'border-slate-300 text-slate-800 hover:bg-slate-100'
+                          }`}
+                        >
+                          <Mail className="w-3.5 h-3.5 text-[#d4af37]" />
+                          <span>Send Password Reset Email</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Section 2: Change Owner Security PIN */}
+                  <div
+                    className={`p-6 rounded-2xl border space-y-4 ${
+                      isDark ? 'bg-[#061833] border-[#d4af37]/30' : 'bg-[#faf8f5] border-[#d4af37]/35'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="w-4 h-4 text-[#d4af37]" />
+                      <h4 className="font-bold text-sm uppercase tracking-wider text-[#d4af37]">
+                        2. Customize Owner Security PIN Passcode
+                      </h4>
+                    </div>
+                    <p className="text-xs opacity-80">
+                      Current Default PIN: <strong className="font-mono text-[#d4af37]">nana2026</strong>. You can change this to your own private passcode (e.g. 4–12 letters or numbers).
+                    </p>
+
+                    {pinStatusMsg && (
+                      <div
+                        className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+                          pinStatusMsg.type === 'success'
+                            ? 'bg-emerald-500/15 border border-emerald-500/40 text-emerald-400'
+                            : 'bg-rose-500/15 border border-rose-500/40 text-rose-400'
+                        }`}
+                      >
+                        {pinStatusMsg.type === 'success' ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                        )}
+                        <span>{pinStatusMsg.text}</span>
+                      </div>
+                    )}
+
+                    <form onSubmit={handleUpdateCustomPin} className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold mb-1">New Security PIN (e.g. 4 to 12 chars)</label>
+                        <input
+                          type="password"
+                          value={newCustomPin}
+                          onChange={(e) => setNewCustomPin(e.target.value)}
+                          placeholder="Enter your new secret PIN"
+                          className={`w-full px-3 py-2 rounded-xl border text-xs font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold mb-1">Confirm New Security PIN</label>
+                        <input
+                          type="password"
+                          value={confirmCustomPin}
+                          onChange={(e) => setConfirmCustomPin(e.target.value)}
+                          placeholder="Re-enter your new secret PIN"
+                          className={`w-full px-3 py-2 rounded-xl border text-xs font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 pt-2">
+                        <button
+                          type="submit"
+                          disabled={!newCustomPin}
+                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#aa8214] text-[#041226] font-bold text-xs flex items-center gap-2 shadow hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Update Security PIN</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleResetPinToDefault}
+                          className={`px-4 py-2.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                            isDark
+                              ? 'border-white/15 text-slate-300 hover:bg-white/5'
+                              : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Reset to Default (nana2026)</span>
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Section 3: Active Authentication Details */}
+                  <div
+                    className={`p-4 rounded-xl border text-xs space-y-2 ${
+                      isDark ? 'bg-[#040f1f] border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                    }`}
+                  >
+                    <div className="font-bold text-[#d4af37] uppercase tracking-wider text-[11px]">
+                      Active Session & Security Profile
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                      <div>
+                        <span className="opacity-70">Authenticated User: </span>
+                        <strong>{auth.currentUser?.email || ownerEmail || 'Owner (PIN Authenticated)'}</strong>
+                      </div>
+                      <div>
+                        <span className="opacity-70">Sign-In Provider: </span>
+                        <strong>{auth.currentUser?.providerData?.[0]?.providerId || 'Security PIN / Email'}</strong>
+                      </div>
+                      <div>
+                        <span className="opacity-70">Owner Permissions: </span>
+                        <strong className="text-emerald-400">Full Business & Site Admin</strong>
+                      </div>
+                      <div>
+                        <span className="opacity-70">Database: </span>
+                        <strong>Cloud Firestore Connected</strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </>

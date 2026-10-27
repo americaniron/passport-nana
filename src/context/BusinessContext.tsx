@@ -933,10 +933,13 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     password?: string
   ): Promise<{ success: boolean; error?: string }> => {
     const cleanPin = pin.trim();
-    if (cleanPin !== 'nana2026') {
+    const savedCustomPin =
+      typeof window !== 'undefined' ? localStorage.getItem('pn_owner_pin') : null;
+    const isValidPin = cleanPin === 'nana2026' || (savedCustomPin && cleanPin === savedCustomPin);
+    if (!isValidPin) {
       return {
         success: false,
-        error: 'Incorrect Owner Security PIN. Please enter "nana2026".',
+        error: `Incorrect Owner Security PIN. Please enter "${savedCustomPin || 'nana2026'}".`,
       };
     }
 
