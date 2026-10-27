@@ -4,13 +4,26 @@ export interface CalendarDayStatus {
   date: string; // YYYY-MM-DD
   status: AvailabilityStatus;
   note?: string;
-  timeSlots?: string[];
+  updatedAt?: string;
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 
+export interface LiveUpdateRecord {
+  id: string;
+  bookingId: string;
+  authorUid: string;
+  authorName: string;
+  authorRole: 'client' | 'nana';
+  message: string;
+  type: 'checkin' | 'photo' | 'flight' | 'milestone' | 'message';
+  timeLabel: string;
+  createdAt: string;
+}
+
 export interface BookingRecord {
   id: string;
+  clientUid: string;
   confirmationCode: string;
   serviceId: string;
   serviceTitle: string;
@@ -30,6 +43,7 @@ export interface BookingRecord {
   finalPaid: boolean;
   status: BookingStatus;
   createdAt: string;
+  updatedAt?: string;
   flightDetails?: {
     airline?: string;
     flightNumber?: string;
@@ -38,12 +52,23 @@ export interface BookingRecord {
     terminal?: string;
     hotelName?: string;
   };
-  liveUpdates?: {
-    id: string;
-    time: string;
-    message: string;
-    type: 'checkin' | 'photo' | 'flight' | 'milestone';
-  }[];
+  liveUpdates?: LiveUpdateRecord[];
+}
+
+export interface CareProfile {
+  userId: string;
+  parentName: string;
+  phone: string;
+  email: string;
+  homeAddress: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  pediatricianInfo: string;
+  childrenDetails: string;
+  allergiesAndMedical: string;
+  dailyRoutines: string;
+  petCareDetails: string;
+  updatedAt: string;
 }
 
 export interface PromotionItem {
@@ -55,8 +80,8 @@ export interface PromotionItem {
   isPermanent: boolean;
   expiresAt?: string;
   minSpend?: number;
-  applicableServices?: string[]; // empty means all
   isActive: boolean;
+  createdAt?: string;
 }
 
 export interface MediaItem {

@@ -1,8 +1,34 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
+  User as FirebaseUser,
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import {
+  collection,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  where,
+  getDoc,
+} from 'firebase/firestore';
+import {
+  auth,
+  db,
+  googleProvider,
+  handleFirestoreError,
+  OperationType,
+} from '../lib/firebase.ts';
+import {
   BookingRecord,
   BookingStatus,
   CalendarDayStatus,
+  CareProfile,
+  LiveUpdateRecord,
   MediaItem,
   PricingRatesConfig,
   PromotionItem,
@@ -11,48 +37,94 @@ import {
 } from '../types/business.ts';
 
 interface BusinessContextType {
+  // Authentication
+  currentUser: FirebaseUser | null;
+  isAuthReady: boolean;
+  signInWithGoogle: () => Promise<FirebaseUser | null>;
+  signOutUser: () => Promise<void>;
+
   // Site Copy
   siteCopy: SiteCopyConfig;
-  updateSiteCopy: (newCopy: Partial<SiteCopyConfig>) => void;
+  updateSiteCopy: (newCopy: Partial<SiteCopyConfig>) => Promise<void>;
 
   // Theme Colors
   themeColors: ThemeColorsConfig;
-  updateThemeColors: (newColors: Partial<ThemeColorsConfig>) => void;
-  resetThemeColors: () => void;
+  updateThemeColors: (newColors: Partial<ThemeColorsConfig>) => Promise<void>;
+  resetThemeColors: () => Promise<void>;
 
   // Owner Availability Calendar
   calendarAvailability: Record<string, CalendarDayStatus>;
-  updateDayAvailability: (dateStr: string, status: CalendarDayStatus['status'], note?: string) => void;
+  updateDayAvailability: (
+    dateStr: string,
+    status: CalendarDayStatus['status'],
+    note?: string
+  ) => Promise<void>;
   getAvailabilityForDate: (dateStr: string) => CalendarDayStatus;
+
+  // Client Care Profile
+  careProfile: CareProfile | null;
+  saveCareProfile: (profileData: Omit<CareProfile, 'userId' | 'updatedAt'>) => Promise<void>;
 
   // Bookings
   bookings: BookingRecord[];
-  addBooking: (booking: Omit<BookingRecord, 'id' | 'createdAt' | 'status' | 'depositPaid' | 'finalPaid'>) => BookingRecord;
-  updateBookingStatus: (id: string, status: BookingStatus) => void;
-  updateBookingFlight: (id: string, flightDetails: BookingRecord['flightDetails']) => void;
-  addLiveUpdate: (bookingId: string, message: string, type: 'checkin' | 'photo' | 'flight' | 'milestone') => void;
-  deleteBooking: (id: string) => void;
+  bookingsLoading: boolean;
+  addBooking: (
+    booking: Omit<
+      BookingRecord,
+      'id' | 'clientUid' | 'createdAt' | 'status' | 'depositPaid' | 'finalPaid'
+    >
+  ) => Promise<BookingRecord>;
+  updateBookingStatus: (id: string, status: BookingStatus) => Promise<void>;
+  updateBookingFlight: (
+    id: string,
+    flightDetails: NonNullable<BookingRecord['flightDetails']>
+  ) => Promise<void>;
+  updateBookingClientNotes: (
+    id: string,
+    updates: {
+      locationAddress?: string;
+      specialRequests?: string;
+      childrenDetails?: string;
+      depositPaid?: boolean;
+      status?: BookingStatus;
+    }
+  ) => Promise<void>;
+  addLiveUpdate: (
+    bookingId: string,
+    message: string,
+    type: 'checkin' | 'photo' | 'flight' | 'milestone' | 'message',
+    role?: 'client' | 'nana'
+  ) => Promise<void>;
+  deleteBooking: (id: string) => Promise<void>;
 
   // Promotions
   promotions: PromotionItem[];
-  addPromotion: (promo: Omit<PromotionItem, 'id'>) => void;
-  updatePromotion: (id: string, promo: Partial<PromotionItem>) => void;
-  deletePromotion: (id: string) => void;
-  applyPromoCode: (code: string, currentTotal: number) => { valid: boolean; discountAmount: number; message: string; promo?: PromotionItem };
+  addPromotion: (promo: Omit<PromotionItem, 'id'>) => Promise<void>;
+  updatePromotion: (id: string, promo: Partial<PromotionItem>) => Promise<void>;
+  deletePromotion: (id: string) => Promise<void>;
+  applyPromoCode: (
+    code: string,
+    currentTotal: number
+  ) => {
+    valid: boolean;
+    discountAmount: number;
+    message: string;
+    promo?: PromotionItem;
+  };
 
   // Media Gallery
   mediaGallery: MediaItem[];
-  addMediaItem: (item: Omit<MediaItem, 'id' | 'createdAt'>) => void;
-  deleteMediaItem: (id: string) => void;
+  addMediaItem: (item: Omit<MediaItem, 'id' | 'createdAt'>) => Promise<void>;
+  deleteMediaItem: (id: string) => Promise<void>;
 
   // Pricing
   pricingRates: PricingRatesConfig;
-  updatePricingRates: (newRates: Partial<PricingRatesConfig>) => void;
+  updatePricingRates: (newRates: Partial<PricingRatesConfig>) => Promise<void>;
 
   // Admin Auth
   isAdminAuthenticated: boolean;
-  adminLogin: (pin: string) => boolean;
-  adminLogout: () => void;
+  adminLogin: (pin: string) => Promise<boolean>;
+  adminLogout: () => Promise<void>;
 }
 
 const DEFAULT_SITE_COPY: SiteCopyConfig = {
@@ -68,7 +140,7 @@ const DEFAULT_SITE_COPY: SiteCopyConfig = {
   businessEmail: 'care@passportnana.com',
   emergencyLine: '305-409-6788 (24/7 Urgent On-Call)',
   serviceHubs: 'Miami • Charlotte • Atlanta • Orlando • New York • Global Flights',
-  announcementBanner: '✈️ Now Accepting Summer & Holiday Travel Bookings! 24/7 On-Call Available.',
+  announcementBanner: '✈️ Now Accepting Travel Accompaniment & 24/7 On-Call Childcare Bookings!',
   showAnnouncement: true,
 };
 
@@ -95,331 +167,25 @@ const DEFAULT_PRICING_RATES: PricingRatesConfig = {
   standardMinHours: 4,
 };
 
-const DEFAULT_PROMOTIONS: PromotionItem[] = [
-  {
-    id: 'promo-1',
-    code: 'PASSPORT50',
-    discountType: 'fixed',
-    discountValue: 50,
-    description: '$50 Off Any Travel Nanny Flight Accompaniment',
-    isPermanent: true,
-    minSpend: 250,
-    isActive: true,
-  },
-  {
-    id: 'promo-2',
-    code: 'WELCOME20',
-    discountType: 'percentage',
-    discountValue: 20,
-    description: '20% Off Your First Childcare Booking',
-    isPermanent: true,
-    minSpend: 100,
-    isActive: true,
-  },
-  {
-    id: 'promo-3',
-    code: 'MEETFREE',
-    discountType: 'percentage',
-    discountValue: 100,
-    description: '100% Free Virtual or In-Person Meet-N-Greet',
-    isPermanent: true,
-    isActive: true,
-  },
-  {
-    id: 'promo-4',
-    code: 'HOLIDAYVIP',
-    discountType: 'fixed',
-    discountValue: 75,
-    description: '$75 Off Multi-Day Adventure & Overnight Packages',
-    isPermanent: false,
-    expiresAt: '2026-12-31',
-    minSpend: 300,
-    isActive: true,
-  },
-];
-
-const DEFAULT_MEDIA_GALLERY: MediaItem[] = [
-  {
-    id: 'media-1',
-    title: 'Passport Nanny On-Call Care',
-    url: '/assets/aistudio/Screenshot_2026-10-26_at_11.51.47_PM_dc5d1ced.png',
-    category: 'passport_travel',
-    caption: 'Luxury travel childcare and 24/7 peaceful on-call service.',
-    createdAt: '2026-10-26',
-  },
-  {
-    id: 'media-2',
-    title: 'Ken’nyzhae & IncrediBeingz Joy',
-    url: '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp',
-    category: 'childcare',
-    caption: 'Safe, attentive, educational childcare experiences.',
-    createdAt: '2026-10-25',
-  },
-  {
-    id: 'media-3',
-    title: 'Adventure Day Park Exploration',
-    url: '/assets/aistudio/p3.png',
-    category: 'adventures',
-    caption: 'Making memories, one sunny outdoor adventure at a time.',
-    createdAt: '2026-10-24',
-  },
-  {
-    id: 'media-4',
-    title: 'Neat & Clean Travel-Ready Braids',
-    url: '/assets/aistudio/p2.png',
-    category: 'hair_locs',
-    caption: 'Gentle protective braiding and scalp nourishment for kids & adults.',
-    createdAt: '2026-10-23',
-  },
-];
-
-// Pre-seeded realistic bookings for client portal & admin testing
-const DEFAULT_BOOKINGS: BookingRecord[] = [
-  {
-    id: 'bkg-101',
-    confirmationCode: 'PN-PARIS9',
-    serviceId: 'passport-travel-nanny',
-    serviceTitle: 'Passport Nanny (Travel Childcare)',
-    clientName: 'The Jenkins Family (Sarah & Marcus)',
-    clientPhone: '305-555-0199',
-    clientEmail: 'sarah.jenkins@gmail.com',
-    serviceDate: '2026-11-04',
-    startTime: '07:30 AM',
-    hours: 14,
-    childrenCount: 2,
-    childrenDetails: 'Leo (Age 4, peanut allergy - EpiPen in carry-on) & Maya (Age 7, loves drawing).',
-    locationAddress: 'Miami International Airport (MIA) -> Paris Charles de Gaulle (CDG)',
-    specialRequests: 'Need accompaniment through TSA, in-flight sensory play, and hotel bedtime settling in Paris.',
-    estimatedTotal: 560,
-    requiredDeposit: 140,
-    depositPaid: true,
-    finalPaid: false,
-    status: 'confirmed',
-    createdAt: '2026-10-26T14:30:00Z',
-    flightDetails: {
-      airline: 'Air France',
-      flightNumber: 'AF095',
-      departureCity: 'Miami (MIA)',
-      destinationCity: 'Paris (CDG)',
-      terminal: 'Terminal J, Gate 14',
-      hotelName: 'The Westin Paris - Vendôme',
-    },
-    liveUpdates: [
-      {
-        id: 'u1',
-        time: 'Oct 26, 3:00 PM',
-        message: 'Flight itinerary confirmed with Nana Ken’nyzhae. Carry-on sensory kits prepped!',
-        type: 'checkin',
-      },
-      {
-        id: 'u2',
-        time: 'Oct 26, 4:15 PM',
-        message: 'Pre-flight meet & allergy checklist completed with Marcus.',
-        type: 'milestone',
-      },
-    ],
-  },
-  {
-    id: 'bkg-102',
-    confirmationCode: 'PN-KID882',
-    serviceId: 'nanny-services',
-    serviceTitle: 'Nanny Services (Weekend Overnight)',
-    clientName: 'The Carter Family (Elena)',
-    clientPhone: '305-555-0144',
-    clientEmail: 'elena.carter@outlook.com',
-    serviceDate: '2026-10-31',
-    startTime: '04:00 PM',
-    hours: 8,
-    childrenCount: 1,
-    childrenDetails: 'Noah (Age 5, loves dinosaur bedtime stories).',
-    locationAddress: 'Brickell Bay Drive, Miami FL',
-    specialRequests: 'Halloween costume supervision and healthy dinner prep.',
-    estimatedTotal: 240,
-    requiredDeposit: 60,
-    depositPaid: true,
-    finalPaid: true,
-    status: 'in_progress',
-    createdAt: '2026-10-25T11:00:00Z',
-    liveUpdates: [
-      {
-        id: 'u3',
-        time: 'Today, 4:00 PM',
-        message: 'Nana arrived safely! Noah is excited for reading and puzzles.',
-        type: 'checkin',
-      },
-      {
-        id: 'u4',
-        time: 'Today, 5:30 PM',
-        message: 'Healthy dinner eaten happily. Preparing dinosaur craft activity!',
-        type: 'milestone',
-      },
-    ],
-  },
-  {
-    id: 'bkg-103',
-    confirmationCode: 'PN-BRAID3',
-    serviceId: 'kids-freestyle-braids',
-    serviceTitle: 'Kids Freestyle Braids with Beads',
-    clientName: 'The Davis Family (Tanya)',
-    clientPhone: '305-555-0182',
-    clientEmail: 'tanya.davis@yahoo.com',
-    serviceDate: '2026-11-08',
-    startTime: '10:00 AM',
-    hours: 3,
-    childrenCount: 1,
-    childrenDetails: 'Zuri (Age 8, gentle scalp).',
-    locationAddress: 'Family Residence, Fort Lauderdale FL',
-    specialRequests: 'Gold and pastel beads requested for travel vacation style.',
-    estimatedTotal: 100,
-    requiredDeposit: 25,
-    depositPaid: true,
-    finalPaid: false,
-    status: 'confirmed',
-    createdAt: '2026-10-24T09:15:00Z',
-  },
-];
-
-// Helper to seed calendar days
-function generateInitialCalendar(): Record<string, CalendarDayStatus> {
-  const result: Record<string, CalendarDayStatus> = {};
-  const today = new Date();
-
-  // Populate 60 days from today
-  for (let i = 0; i < 60; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    const dateStr = d.toISOString().split('T')[0];
-    const dayOfWeek = d.getDay();
-
-    // Default distribution:
-    // Tuesdays & Thursdays: Travel Flights or Limited
-    // Sundays/Mondays/Wednesdays/Fridays/Saturdays: Available
-    if (i === 1 || i === 2) {
-      result[dateStr] = {
-        date: dateStr,
-        status: 'available',
-        note: 'Full 24/7 On-Call & Babysitting Open',
-      };
-    } else if (i >= 8 && i <= 10) {
-      result[dateStr] = {
-        date: dateStr,
-        status: 'flight',
-        note: 'Passport Nanny Flight: MIA -> Paris (Jenkins Family)',
-      };
-    } else if (i === 5 || i === 14 || i === 21) {
-      result[dateStr] = {
-        date: dateStr,
-        status: 'limited',
-        note: 'Morning slots open; afternoon booked for school pickup',
-      };
-    } else if (i === 18) {
-      result[dateStr] = {
-        date: dateStr,
-        status: 'booked',
-        note: 'Private All-Day Family Event',
-      };
-    } else {
-      result[dateStr] = {
-        date: dateStr,
-        status: 'available',
-        note: 'Open for In-Home Care, Hair Appointments & Travel',
-      };
-    }
-  }
-
-  return result;
-}
-
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Site Copy
-  const [siteCopy, setSiteCopy] = useState<SiteCopyConfig>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_copy');
-      return saved ? JSON.parse(saved) : DEFAULT_SITE_COPY;
-    } catch {
-      return DEFAULT_SITE_COPY;
-    }
-  });
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
 
-  // Theme Colors
-  const [themeColors, setThemeColors] = useState<ThemeColorsConfig>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_theme_colors');
-      return saved ? JSON.parse(saved) : DEFAULT_THEME_COLORS;
-    } catch {
-      return DEFAULT_THEME_COLORS;
-    }
-  });
+  const [siteCopy, setSiteCopy] = useState<SiteCopyConfig>(DEFAULT_SITE_COPY);
+  const [themeColors, setThemeColors] = useState<ThemeColorsConfig>(DEFAULT_THEME_COLORS);
+  const [pricingRates, setPricingRates] = useState<PricingRatesConfig>(DEFAULT_PRICING_RATES);
+  const [calendarAvailability, setCalendarAvailability] = useState<Record<string, CalendarDayStatus>>({});
+  const [promotions, setPromotions] = useState<PromotionItem[]>([]);
+  const [mediaGallery, setMediaGallery] = useState<MediaItem[]>([]);
+  const [careProfile, setCareProfile] = useState<CareProfile | null>(null);
+  const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState<boolean>(false);
 
-  // Calendar
-  const [calendarAvailability, setCalendarAvailability] = useState<Record<string, CalendarDayStatus>>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_calendar');
-      return saved ? JSON.parse(saved) : generateInitialCalendar();
-    } catch {
-      return generateInitialCalendar();
-    }
-  });
-
-  // Bookings
-  const [bookings, setBookings] = useState<BookingRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_bookings');
-      return saved ? JSON.parse(saved) : DEFAULT_BOOKINGS;
-    } catch {
-      return DEFAULT_BOOKINGS;
-    }
-  });
-
-  // Promotions
-  const [promotions, setPromotions] = useState<PromotionItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_promotions');
-      return saved ? JSON.parse(saved) : DEFAULT_PROMOTIONS;
-    } catch {
-      return DEFAULT_PROMOTIONS;
-    }
-  });
-
-  // Media
-  const [mediaGallery, setMediaGallery] = useState<MediaItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_media');
-      return saved ? JSON.parse(saved) : DEFAULT_MEDIA_GALLERY;
-    } catch {
-      return DEFAULT_MEDIA_GALLERY;
-    }
-  });
-
-  // Pricing
-  const [pricingRates, setPricingRates] = useState<PricingRatesConfig>(() => {
-    try {
-      const saved = localStorage.getItem('passport_nana_pricing');
-      return saved ? JSON.parse(saved) : DEFAULT_PRICING_RATES;
-    } catch {
-      return DEFAULT_PRICING_RATES;
-    }
-  });
-
-  // Admin Auth
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('passport_nana_admin_auth') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  // Synchronize to localStorage
+  // Apply live theme CSS variables whenever themeColors changes
   useEffect(() => {
-    localStorage.setItem('passport_nana_copy', JSON.stringify(siteCopy));
-  }, [siteCopy]);
-
-  useEffect(() => {
-    localStorage.setItem('passport_nana_theme_colors', JSON.stringify(themeColors));
-    // Apply dynamic CSS variables to document root for real-time live theme updating
     const root = document.documentElement;
     root.style.setProperty('--pn-dark-bg', themeColors.darkBg);
     root.style.setProperty('--pn-dark-card', themeColors.darkCard);
@@ -429,47 +195,334 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     root.style.setProperty('--pn-light-gold', themeColors.lightAccentGold);
   }, [themeColors]);
 
+  // 1. Listen to Firebase Auth State
   useEffect(() => {
-    localStorage.setItem('passport_nana_calendar', JSON.stringify(calendarAvailability));
-  }, [calendarAvailability]);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      if (user) {
+        // Check if user is bootstrapped owner email or registered in /admins/{uid}
+        if (user.email === 'info@fixmyiron.com' && user.emailVerified) {
+          setIsAdminAuthenticated(true);
+        } else {
+          try {
+            const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+            setIsAdminAuthenticated(adminSnap.exists());
+          } catch {
+            setIsAdminAuthenticated(false);
+          }
+        }
+      } else {
+        setIsAdminAuthenticated(false);
+        setCareProfile(null);
+        setBookings([]);
+      }
+      setIsAuthReady(true);
+    });
+    return () => unsubscribe();
+  }, []);
 
+  // 2. Listen to Public Site Config (/siteConfig/main)
   useEffect(() => {
-    localStorage.setItem('passport_nana_bookings', JSON.stringify(bookings));
-  }, [bookings]);
+    const configRef = doc(db, 'siteConfig', 'main');
+    const unsub = onSnapshot(
+      configRef,
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setSiteCopy({
+            heroTagline: data.heroTagline ?? DEFAULT_SITE_COPY.heroTagline,
+            heroTitle: data.heroTitle ?? DEFAULT_SITE_COPY.heroTitle,
+            heroSubtitle: data.heroSubtitle ?? DEFAULT_SITE_COPY.heroSubtitle,
+            aboutHeadline: data.aboutHeadline ?? DEFAULT_SITE_COPY.aboutHeadline,
+            aboutBio: data.aboutBio ?? DEFAULT_SITE_COPY.aboutBio,
+            founderName: data.founderName ?? DEFAULT_SITE_COPY.founderName,
+            businessPhone: data.businessPhone ?? DEFAULT_SITE_COPY.businessPhone,
+            businessEmail: data.businessEmail ?? DEFAULT_SITE_COPY.businessEmail,
+            emergencyLine: data.emergencyLine ?? DEFAULT_SITE_COPY.emergencyLine,
+            serviceHubs: data.serviceHubs ?? DEFAULT_SITE_COPY.serviceHubs,
+            announcementBanner: data.announcementBanner ?? DEFAULT_SITE_COPY.announcementBanner,
+            showAnnouncement: data.showAnnouncement ?? DEFAULT_SITE_COPY.showAnnouncement,
+          });
+          setThemeColors({
+            darkBg: data.darkBg ?? DEFAULT_THEME_COLORS.darkBg,
+            darkCard: data.darkCard ?? DEFAULT_THEME_COLORS.darkCard,
+            darkAccentGold: data.darkAccentGold ?? DEFAULT_THEME_COLORS.darkAccentGold,
+            darkText: data.darkText ?? DEFAULT_THEME_COLORS.darkText,
+            lightBg: data.lightBg ?? DEFAULT_THEME_COLORS.lightBg,
+            lightCard: data.lightCard ?? DEFAULT_THEME_COLORS.lightCard,
+            lightAccentGold: data.lightAccentGold ?? DEFAULT_THEME_COLORS.lightAccentGold,
+            lightText: data.lightText ?? DEFAULT_THEME_COLORS.lightText,
+          });
+          setPricingRates({
+            nannyHourly: data.nannyHourly ?? DEFAULT_PRICING_RATES.nannyHourly,
+            passportTravelHourly: data.passportTravelHourly ?? DEFAULT_PRICING_RATES.passportTravelHourly,
+            schoolPickupRate: data.schoolPickupRate ?? DEFAULT_PRICING_RATES.schoolPickupRate,
+            adventureDayHourly: data.adventureDayHourly ?? DEFAULT_PRICING_RATES.adventureDayHourly,
+            petNannyHourly: data.petNannyHourly ?? DEFAULT_PRICING_RATES.petNannyHourly,
+            braidsBase: data.braidsBase ?? DEFAULT_PRICING_RATES.braidsBase,
+            locRetwistBase: data.locRetwistBase ?? DEFAULT_PRICING_RATES.locRetwistBase,
+            additionalChildRate: data.additionalChildRate ?? DEFAULT_PRICING_RATES.additionalChildRate,
+            standardMinHours: data.standardMinHours ?? DEFAULT_PRICING_RATES.standardMinHours,
+          });
+        }
+      },
+      (err) => {
+        console.error('Error reading siteConfig:', err);
+      }
+    );
+    return () => unsub();
+  }, []);
 
+  // 3. Listen to Public Owner Availability (/availability)
   useEffect(() => {
-    localStorage.setItem('passport_nana_promotions', JSON.stringify(promotions));
-  }, [promotions]);
+    const unsub = onSnapshot(
+      collection(db, 'availability'),
+      (snap) => {
+        const map: Record<string, CalendarDayStatus> = {};
+        snap.forEach((docSnap) => {
+          const d = docSnap.data() as CalendarDayStatus;
+          map[d.date || docSnap.id] = {
+            date: d.date || docSnap.id,
+            status: d.status,
+            note: d.note,
+            updatedAt: d.updatedAt,
+          };
+        });
+        setCalendarAvailability(map);
+      },
+      (err) => {
+        console.error('Error reading availability:', err);
+      }
+    );
+    return () => unsub();
+  }, []);
 
+  // 4. Listen to Public Promotions (/promotions)
   useEffect(() => {
-    localStorage.setItem('passport_nana_media', JSON.stringify(mediaGallery));
-  }, [mediaGallery]);
+    const unsub = onSnapshot(
+      collection(db, 'promotions'),
+      (snap) => {
+        const list: PromotionItem[] = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          list.push({
+            id: docSnap.id,
+            code: d.code,
+            discountType: d.discountType,
+            discountValue: d.discountValue,
+            description: d.description,
+            isPermanent: d.isPermanent,
+            expiresAt: d.expiresAt,
+            minSpend: d.minSpend,
+            isActive: d.isActive,
+            createdAt: d.createdAt,
+          });
+        });
+        setPromotions(list);
+      },
+      (err) => {
+        console.error('Error reading promotions:', err);
+      }
+    );
+    return () => unsub();
+  }, []);
 
+  // 5. Listen to Public Media Gallery (/mediaGallery)
   useEffect(() => {
-    localStorage.setItem('passport_nana_pricing', JSON.stringify(pricingRates));
-  }, [pricingRates]);
+    const unsub = onSnapshot(
+      collection(db, 'mediaGallery'),
+      (snap) => {
+        const list: MediaItem[] = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          list.push({
+            id: docSnap.id,
+            title: d.title,
+            url: d.url,
+            category: d.category,
+            caption: d.caption,
+            createdAt: d.createdAt,
+          });
+        });
+        setMediaGallery(list);
+      },
+      (err) => {
+        console.error('Error reading mediaGallery:', err);
+      }
+    );
+    return () => unsub();
+  }, []);
 
-  const updateSiteCopy = (newCopy: Partial<SiteCopyConfig>) => {
-    setSiteCopy((prev) => ({ ...prev, ...newCopy }));
+  // 6. Listen to Authenticated Client's Care Profile (/careProfiles/{uid})
+  useEffect(() => {
+    if (!isAuthReady || !currentUser) {
+      setCareProfile(null);
+      return;
+    }
+
+    const profileRef = doc(db, 'careProfiles', currentUser.uid);
+    const unsub = onSnapshot(
+      profileRef,
+      (snap) => {
+        if (snap.exists()) {
+          setCareProfile(snap.data() as CareProfile);
+        } else {
+          setCareProfile(null);
+        }
+      },
+      (err) => {
+        handleFirestoreError(err, OperationType.GET, `careProfiles/${currentUser.uid}`);
+      }
+    );
+    return () => unsub();
+  }, [isAuthReady, currentUser]);
+
+  // 7. Listen to Real Bookings (/bookings) and their liveUpdates
+  useEffect(() => {
+    if (!isAuthReady || !currentUser) {
+      setBookings([]);
+      setBookingsLoading(false);
+      return;
+    }
+
+    setBookingsLoading(true);
+    const bookingsQuery = isAdminAuthenticated
+      ? collection(db, 'bookings')
+      : query(collection(db, 'bookings'), where('clientUid', '==', currentUser.uid));
+
+    const unsubBookings = onSnapshot(
+      bookingsQuery,
+      (snap) => {
+        const records: BookingRecord[] = [];
+        snap.forEach((docSnap) => {
+          const d = docSnap.data();
+          records.push({
+            id: docSnap.id,
+            clientUid: d.clientUid,
+            confirmationCode: d.confirmationCode,
+            serviceId: d.serviceId,
+            serviceTitle: d.serviceTitle,
+            clientName: d.clientName,
+            clientPhone: d.clientPhone,
+            clientEmail: d.clientEmail,
+            serviceDate: d.serviceDate,
+            startTime: d.startTime,
+            hours: d.hours,
+            childrenCount: d.childrenCount,
+            childrenDetails: d.childrenDetails,
+            locationAddress: d.locationAddress,
+            specialRequests: d.specialRequests,
+            estimatedTotal: d.estimatedTotal,
+            requiredDeposit: d.requiredDeposit,
+            depositPaid: d.depositPaid,
+            finalPaid: d.finalPaid,
+            status: d.status,
+            createdAt: d.createdAt,
+            updatedAt: d.updatedAt,
+            flightDetails:
+              d.flightAirline || d.flightNumber || d.flightDeparture || d.flightDestination || d.flightTerminal || d.hotelName
+                ? {
+                    airline: d.flightAirline || '',
+                    flightNumber: d.flightNumber || '',
+                    departureCity: d.flightDeparture || '',
+                    destinationCity: d.flightDestination || '',
+                    terminal: d.flightTerminal || '',
+                    hotelName: d.hotelName || '',
+                  }
+                : undefined,
+            liveUpdates: [],
+          });
+        });
+
+        // Sort newest first
+        records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        setBookings(records);
+        setBookingsLoading(false);
+      },
+      (err) => {
+        setBookingsLoading(false);
+        handleFirestoreError(err, OperationType.LIST, 'bookings');
+      }
+    );
+
+    return () => unsubBookings();
+  }, [isAuthReady, currentUser, isAdminAuthenticated]);
+
+  // Auth Helpers
+  const signInWithGoogle = async (): Promise<FirebaseUser | null> => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      return null;
+    }
   };
 
-  const updateThemeColors = (newColors: Partial<ThemeColorsConfig>) => {
-    setThemeColors((prev) => ({ ...prev, ...newColors }));
+  const signOutUser = async (): Promise<void> => {
+    await signOut(auth);
+    setIsAdminAuthenticated(false);
   };
 
-  const resetThemeColors = () => {
+  // Site Copy, Theme, Pricing Writers
+  const saveCombinedSiteConfig = async (
+    copy: SiteCopyConfig,
+    colors: ThemeColorsConfig,
+    rates: PricingRatesConfig
+  ) => {
+    const path = 'siteConfig/main';
+    try {
+      await setDoc(doc(db, 'siteConfig', 'main'), {
+        ...copy,
+        ...colors,
+        ...rates,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
+    }
+  };
+
+  const updateSiteCopy = async (newCopy: Partial<SiteCopyConfig>) => {
+    const updated = { ...siteCopy, ...newCopy };
+    setSiteCopy(updated);
+    await saveCombinedSiteConfig(updated, themeColors, pricingRates);
+  };
+
+  const updateThemeColors = async (newColors: Partial<ThemeColorsConfig>) => {
+    const updated = { ...themeColors, ...newColors };
+    setThemeColors(updated);
+    await saveCombinedSiteConfig(siteCopy, updated, pricingRates);
+  };
+
+  const resetThemeColors = async () => {
     setThemeColors(DEFAULT_THEME_COLORS);
+    await saveCombinedSiteConfig(siteCopy, DEFAULT_THEME_COLORS, pricingRates);
   };
 
-  const updateDayAvailability = (dateStr: string, status: CalendarDayStatus['status'], note?: string) => {
-    setCalendarAvailability((prev) => ({
-      ...prev,
-      [dateStr]: {
+  const updatePricingRates = async (newRates: Partial<PricingRatesConfig>) => {
+    const updated = { ...pricingRates, ...newRates };
+    setPricingRates(updated);
+    await saveCombinedSiteConfig(siteCopy, themeColors, updated);
+  };
+
+  // Availability Writers
+  const updateDayAvailability = async (
+    dateStr: string,
+    status: CalendarDayStatus['status'],
+    note?: string
+  ) => {
+    const path = `availability/${dateStr}`;
+    try {
+      await setDoc(doc(db, 'availability', dateStr), {
         date: dateStr,
         status,
-        note: note || (status === 'available' ? 'Open for booking' : status === 'flight' ? 'Travel Nanny In Transit' : 'Reserved'),
-      },
-    }));
+        note: (note || (status === 'available' ? 'Open for care appointment' : status === 'flight' ? 'Travel Nanny In Transit' : 'Reserved')).slice(0, 300),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
+    }
   };
 
   const getAvailabilityForDate = (dateStr: string): CalendarDayStatus => {
@@ -479,109 +532,290 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return {
       date: dateStr,
       status: 'available',
-      note: 'Available for care appointment',
+      note: 'Open for In-Home Care, Travel & Hair Appointments',
     };
   };
 
-  const addBooking = (
-    bookingInput: Omit<BookingRecord, 'id' | 'createdAt' | 'status' | 'depositPaid' | 'finalPaid'>
-  ): BookingRecord => {
-    const newRecord: BookingRecord = {
-      ...bookingInput,
-      id: `pn-bkg-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: 'confirmed',
-      depositPaid: true,
+  // Care Profile Writer
+  const saveCareProfile = async (
+    profileData: Omit<CareProfile, 'userId' | 'updatedAt'>
+  ) => {
+    if (!currentUser) throw new Error('Must be signed in to save your family care profile.');
+    const path = `careProfiles/${currentUser.uid}`;
+    const payload: CareProfile = {
+      userId: currentUser.uid,
+      parentName: profileData.parentName.slice(0, 150),
+      phone: profileData.phone.slice(0, 40),
+      email: profileData.email.slice(0, 150),
+      homeAddress: profileData.homeAddress.slice(0, 300),
+      emergencyContactName: profileData.emergencyContactName.slice(0, 150),
+      emergencyContactPhone: profileData.emergencyContactPhone.slice(0, 40),
+      pediatricianInfo: profileData.pediatricianInfo.slice(0, 300),
+      childrenDetails: profileData.childrenDetails.slice(0, 1500),
+      allergiesAndMedical: profileData.allergiesAndMedical.slice(0, 1500),
+      dailyRoutines: profileData.dailyRoutines.slice(0, 1500),
+      petCareDetails: profileData.petCareDetails.slice(0, 1000),
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      await setDoc(doc(db, 'careProfiles', currentUser.uid), payload);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
+    }
+  };
+
+  // Bookings Writers
+  const addBooking = async (
+    bookingInput: Omit<
+      BookingRecord,
+      'id' | 'clientUid' | 'createdAt' | 'status' | 'depositPaid' | 'finalPaid'
+    >
+  ): Promise<BookingRecord> => {
+    let user = currentUser;
+    if (!user) {
+      user = await signInWithGoogle();
+      if (!user) {
+        throw new Error('Please sign in with Google to secure your booking in the Client Portal.');
+      }
+    }
+
+    const bookingId = `bkg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const nowIso = new Date().toISOString();
+
+    const docPayload: Record<string, unknown> = {
+      clientUid: user.uid,
+      confirmationCode: bookingInput.confirmationCode.slice(0, 30),
+      serviceId: bookingInput.serviceId.slice(0, 100),
+      serviceTitle: bookingInput.serviceTitle.slice(0, 200),
+      clientName: bookingInput.clientName.slice(0, 150),
+      clientPhone: bookingInput.clientPhone.slice(0, 40),
+      clientEmail: bookingInput.clientEmail.slice(0, 150),
+      serviceDate: bookingInput.serviceDate.slice(0, 30),
+      startTime: bookingInput.startTime.slice(0, 40),
+      hours: Number(bookingInput.hours),
+      childrenCount: Number(bookingInput.childrenCount),
+      childrenDetails: (bookingInput.childrenDetails || '').slice(0, 1500),
+      locationAddress: bookingInput.locationAddress.slice(0, 400),
+      specialRequests: (bookingInput.specialRequests || '').slice(0, 1500),
+      estimatedTotal: Number(bookingInput.estimatedTotal),
+      requiredDeposit: Number(bookingInput.requiredDeposit),
+      depositPaid: false,
       finalPaid: false,
-      liveUpdates: [
-        {
-          id: `upd-${Date.now()}`,
-          time: 'Just Now',
-          message: `Booking received & confirmed with Passport Nana! Reference: ${bookingInput.confirmationCode}`,
-          type: 'milestone',
-        },
-      ],
+      status: 'confirmed',
+      createdAt: nowIso,
+      updatedAt: nowIso,
     };
 
-    setBookings((prev) => [newRecord, ...prev]);
-    return newRecord;
+    if (bookingInput.flightDetails) {
+      if (bookingInput.flightDetails.airline) docPayload.flightAirline = bookingInput.flightDetails.airline.slice(0, 100);
+      if (bookingInput.flightDetails.flightNumber) docPayload.flightNumber = bookingInput.flightDetails.flightNumber.slice(0, 50);
+      if (bookingInput.flightDetails.departureCity) docPayload.flightDeparture = bookingInput.flightDetails.departureCity.slice(0, 150);
+      if (bookingInput.flightDetails.destinationCity) docPayload.flightDestination = bookingInput.flightDetails.destinationCity.slice(0, 150);
+      if (bookingInput.flightDetails.terminal) docPayload.flightTerminal = bookingInput.flightDetails.terminal.slice(0, 100);
+      if (bookingInput.flightDetails.hotelName) docPayload.hotelName = bookingInput.flightDetails.hotelName.slice(0, 200);
+    }
+
+    try {
+      await setDoc(doc(db, 'bookings', bookingId), docPayload);
+
+      // Create initial milestone in subcollection
+      const updateId = `upd_${Date.now()}`;
+      await setDoc(doc(db, 'bookings', bookingId, 'liveUpdates', updateId), {
+        bookingId,
+        authorUid: user.uid,
+        authorName: bookingInput.clientName.slice(0, 120),
+        authorRole: 'client',
+        message: `Reservation created (${bookingInput.confirmationCode}) for ${bookingInput.serviceDate} at ${bookingInput.startTime}.`,
+        type: 'milestone',
+        timeLabel: new Date().toLocaleString([], {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        createdAt: nowIso,
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `bookings/${bookingId}`);
+    }
+
+    return {
+      ...bookingInput,
+      id: bookingId,
+      clientUid: user.uid,
+      createdAt: nowIso,
+      status: 'confirmed',
+      depositPaid: false,
+      finalPaid: false,
+    };
   };
 
-  const updateBookingStatus = (id: string, status: BookingStatus) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, status, finalPaid: status === 'completed' ? true : b.finalPaid } : b))
-    );
+  const updateBookingStatus = async (id: string, status: BookingStatus) => {
+    const path = `bookings/${id}`;
+    try {
+      await updateDoc(doc(db, 'bookings', id), {
+        status,
+        finalPaid: status === 'completed' ? true : false,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    }
   };
 
-  const updateBookingFlight = (id: string, flightDetails: BookingRecord['flightDetails']) => {
-    setBookings((prev) =>
-      prev.map((b) => (b.id === id ? { ...b, flightDetails: { ...b.flightDetails, ...flightDetails } } : b))
-    );
+  const updateBookingFlight = async (
+    id: string,
+    flightDetails: NonNullable<BookingRecord['flightDetails']>
+  ) => {
+    const path = `bookings/${id}`;
+    try {
+      await updateDoc(doc(db, 'bookings', id), {
+        flightAirline: (flightDetails.airline || '').slice(0, 100),
+        flightNumber: (flightDetails.flightNumber || '').slice(0, 50),
+        flightDeparture: (flightDetails.departureCity || '').slice(0, 150),
+        flightDestination: (flightDetails.destinationCity || '').slice(0, 150),
+        flightTerminal: (flightDetails.terminal || '').slice(0, 100),
+        hotelName: (flightDetails.hotelName || '').slice(0, 200),
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    }
   };
 
-  const addLiveUpdate = (
+  const updateBookingClientNotes = async (
+    id: string,
+    updates: {
+      locationAddress?: string;
+      specialRequests?: string;
+      childrenDetails?: string;
+      depositPaid?: boolean;
+      status?: BookingStatus;
+    }
+  ) => {
+    const path = `bookings/${id}`;
+    const payload: Record<string, unknown> = {
+      updatedAt: new Date().toISOString(),
+    };
+    if (updates.locationAddress !== undefined) payload.locationAddress = updates.locationAddress.slice(0, 400);
+    if (updates.specialRequests !== undefined) payload.specialRequests = updates.specialRequests.slice(0, 1500);
+    if (updates.childrenDetails !== undefined) payload.childrenDetails = updates.childrenDetails.slice(0, 1500);
+    if (updates.depositPaid !== undefined) payload.depositPaid = updates.depositPaid;
+    if (updates.status !== undefined) payload.status = updates.status;
+
+    try {
+      await updateDoc(doc(db, 'bookings', id), payload);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    }
+  };
+
+  const addLiveUpdate = async (
     bookingId: string,
     message: string,
-    type: 'checkin' | 'photo' | 'flight' | 'milestone'
+    type: 'checkin' | 'photo' | 'flight' | 'milestone' | 'message',
+    role?: 'client' | 'nana'
   ) => {
-    setBookings((prev) =>
-      prev.map((b) => {
-        if (b.id !== bookingId) return b;
-        const updates = b.liveUpdates || [];
-        return {
-          ...b,
-          liveUpdates: [
-            ...updates,
-            {
-              id: `live-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              message,
-              type,
-            },
-          ],
-        };
-      })
-    );
+    if (!currentUser) return;
+    const updateId = `upd_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const path = `bookings/${bookingId}/liveUpdates/${updateId}`;
+    const authorRole = role || (isAdminAuthenticated ? 'nana' : 'client');
+    const authorName =
+      authorRole === 'nana'
+        ? "Ken'nyzhae Nathaniel (Passport Nana)"
+        : currentUser.displayName || currentUser.email || 'Family Client';
+
+    try {
+      await setDoc(doc(db, 'bookings', bookingId, 'liveUpdates', updateId), {
+        bookingId,
+        authorUid: currentUser.uid,
+        authorName: authorName.slice(0, 120),
+        authorRole,
+        message: message.trim().slice(0, 1000),
+        type,
+        timeLabel: new Date().toLocaleString([], {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        createdAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    }
   };
 
-  const deleteBooking = (id: string) => {
-    setBookings((prev) => prev.filter((b) => b.id !== id));
+  const deleteBooking = async (id: string) => {
+    const path = `bookings/${id}`;
+    try {
+      await deleteDoc(doc(db, 'bookings', id));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, path);
+    }
   };
 
-  const addPromotion = (promo: Omit<PromotionItem, 'id'>) => {
-    const newPromo: PromotionItem = {
-      ...promo,
-      id: `promo-${Date.now()}`,
-      code: promo.code.trim().toUpperCase(),
+  // Promotions Writers
+  const addPromotion = async (promo: Omit<PromotionItem, 'id'>) => {
+    const promoId = `promo_${Date.now()}`;
+    const path = `promotions/${promoId}`;
+    const payload: Record<string, unknown> = {
+      code: promo.code.trim().toUpperCase().slice(0, 40),
+      discountType: promo.discountType,
+      discountValue: Number(promo.discountValue),
+      description: promo.description.slice(0, 300),
+      isPermanent: Boolean(promo.isPermanent),
+      minSpend: Number(promo.minSpend || 0),
+      isActive: true,
+      createdAt: new Date().toISOString(),
     };
-    setPromotions((prev) => [newPromo, ...prev]);
+    if (promo.expiresAt) payload.expiresAt = promo.expiresAt.slice(0, 40);
+
+    try {
+      await setDoc(doc(db, 'promotions', promoId), payload);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    }
   };
 
-  const updatePromotion = (id: string, updated: Partial<PromotionItem>) => {
-    setPromotions((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updated, code: (updated.code || p.code).toUpperCase() } : p))
-    );
+  const updatePromotion = async (id: string, updated: Partial<PromotionItem>) => {
+    const path = `promotions/${id}`;
+    try {
+      await updateDoc(doc(db, 'promotions', id), updated as Record<string, unknown>);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    }
   };
 
-  const deletePromotion = (id: string) => {
-    setPromotions((prev) => prev.filter((p) => p.id !== id));
+  const deletePromotion = async (id: string) => {
+    const path = `promotions/${id}`;
+    try {
+      await deleteDoc(doc(db, 'promotions', id));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, path);
+    }
   };
 
   const applyPromoCode = (
     code: string,
     currentTotal: number
-  ): { valid: boolean; discountAmount: number; message: string; promo?: PromotionItem } => {
+  ): {
+    valid: boolean;
+    discountAmount: number;
+    message: string;
+    promo?: PromotionItem;
+  } => {
     const cleanCode = code.trim().toUpperCase();
     const promo = promotions.find((p) => p.code === cleanCode && p.isActive);
 
     if (!promo) {
-      return { valid: false, discountAmount: 0, message: 'Invalid or inactive promo code.' };
+      return { valid: false, discountAmount: 0, message: 'Promo code not found or inactive.' };
     }
 
-    if (promo.expiresAt) {
+    if (!promo.isPermanent && promo.expiresAt) {
       const exp = new Date(promo.expiresAt);
       if (exp < new Date()) {
-        return { valid: false, discountAmount: 0, message: 'This promo code has expired.' };
+        return { valid: false, discountAmount: 0, message: 'This promotion has expired.' };
       }
     }
 
@@ -593,56 +827,88 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       };
     }
 
-    let discount = 0;
-    if (promo.discountType === 'percentage') {
-      discount = Math.round((currentTotal * promo.discountValue) / 100);
-    } else {
-      discount = Math.min(promo.discountValue, currentTotal);
-    }
+    const discount =
+      promo.discountType === 'percentage'
+        ? Math.round((currentTotal * promo.discountValue) / 100)
+        : Math.min(promo.discountValue, currentTotal);
 
     return {
       valid: true,
       discountAmount: discount,
-      message: `Success! ${promo.description} applied (-$${discount})`,
+      message: `${promo.description} applied (-$${discount})`,
       promo,
     };
   };
 
-  const addMediaItem = (item: Omit<MediaItem, 'id' | 'createdAt'>) => {
-    const newItem: MediaItem = {
-      ...item,
-      id: `media-${Date.now()}`,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setMediaGallery((prev) => [newItem, ...prev]);
+  // Media Gallery Writers
+  const addMediaItem = async (item: Omit<MediaItem, 'id' | 'createdAt'>) => {
+    const mediaId = `media_${Date.now()}`;
+    const path = `mediaGallery/${mediaId}`;
+    try {
+      await setDoc(doc(db, 'mediaGallery', mediaId), {
+        title: item.title.slice(0, 150),
+        url: item.url.slice(0, 800000),
+        category: item.category,
+        caption: (item.caption || '').slice(0, 400),
+        createdAt: new Date().toISOString().split('T')[0],
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    }
   };
 
-  const deleteMediaItem = (id: string) => {
-    setMediaGallery((prev) => prev.filter((m) => m.id !== id));
+  const deleteMediaItem = async (id: string) => {
+    const path = `mediaGallery/${id}`;
+    try {
+      await deleteDoc(doc(db, 'mediaGallery', id));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.DELETE, path);
+    }
   };
 
-  const updatePricingRates = (newRates: Partial<PricingRatesConfig>) => {
-    setPricingRates((prev) => ({ ...prev, ...newRates }));
-  };
+  // Admin Login
+  const adminLogin = async (pin: string): Promise<boolean> => {
+    let user = currentUser;
+    if (!user) {
+      user = await signInWithGoogle();
+      if (!user) return false;
+    }
 
-  const adminLogin = (pin: string): boolean => {
-    // Default PIN: 'nana2026' or '2026'
-    if (pin.trim() === 'nana2026' || pin.trim() === '2026' || pin.trim().toLowerCase() === 'admin') {
+    if (user.email === 'info@fixmyiron.com' && user.emailVerified) {
       setIsAdminAuthenticated(true);
-      localStorage.setItem('passport_nana_admin_auth', 'true');
       return true;
     }
+
+    if (pin.trim() === 'nana2026') {
+      try {
+        await setDoc(doc(db, 'admins', user.uid), {
+          uid: user.uid,
+          email: (user.email || '').slice(0, 150),
+          role: 'owner',
+          pinPasscode: 'nana2026',
+          createdAt: new Date().toISOString(),
+        });
+        setIsAdminAuthenticated(true);
+        return true;
+      } catch (err) {
+        handleFirestoreError(err, OperationType.CREATE, `admins/${user.uid}`);
+      }
+    }
+
     return false;
   };
 
-  const adminLogout = () => {
+  const adminLogout = async () => {
     setIsAdminAuthenticated(false);
-    localStorage.removeItem('passport_nana_admin_auth');
   };
 
   return (
     <BusinessContext.Provider
       value={{
+        currentUser,
+        isAuthReady,
+        signInWithGoogle,
+        signOutUser,
         siteCopy,
         updateSiteCopy,
         themeColors,
@@ -651,10 +917,14 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         calendarAvailability,
         updateDayAvailability,
         getAvailabilityForDate,
+        careProfile,
+        saveCareProfile,
         bookings,
+        bookingsLoading,
         addBooking,
         updateBookingStatus,
         updateBookingFlight,
+        updateBookingClientNotes,
         addLiveUpdate,
         deleteBooking,
         promotions,

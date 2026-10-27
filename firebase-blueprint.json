@@ -1,0 +1,221 @@
+{
+  "entities": {
+    "SiteConfig": {
+      "title": "SiteConfig",
+      "description": "Global site configuration including copy, theme colors, and pricing rates",
+      "type": "object",
+      "properties": {
+        "heroTagline": { "type": "string", "maxLength": 200 },
+        "heroTitle": { "type": "string", "maxLength": 300 },
+        "heroSubtitle": { "type": "string", "maxLength": 600 },
+        "aboutHeadline": { "type": "string", "maxLength": 300 },
+        "aboutBio": { "type": "string", "maxLength": 2000 },
+        "founderName": { "type": "string", "maxLength": 120 },
+        "businessPhone": { "type": "string", "maxLength": 40 },
+        "businessEmail": { "type": "string", "maxLength": 150 },
+        "emergencyLine": { "type": "string", "maxLength": 100 },
+        "serviceHubs": { "type": "string", "maxLength": 300 },
+        "announcementBanner": { "type": "string", "maxLength": 300 },
+        "showAnnouncement": { "type": "boolean" },
+        "darkBg": { "type": "string", "maxLength": 20 },
+        "darkCard": { "type": "string", "maxLength": 20 },
+        "darkAccentGold": { "type": "string", "maxLength": 20 },
+        "darkText": { "type": "string", "maxLength": 20 },
+        "lightBg": { "type": "string", "maxLength": 20 },
+        "lightCard": { "type": "string", "maxLength": 20 },
+        "lightAccentGold": { "type": "string", "maxLength": 20 },
+        "lightText": { "type": "string", "maxLength": 20 },
+        "nannyHourly": { "type": "number" },
+        "passportTravelHourly": { "type": "number" },
+        "schoolPickupRate": { "type": "number" },
+        "adventureDayHourly": { "type": "number" },
+        "petNannyHourly": { "type": "number" },
+        "braidsBase": { "type": "number" },
+        "locRetwistBase": { "type": "number" },
+        "additionalChildRate": { "type": "number" },
+        "standardMinHours": { "type": "number" },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["heroTitle", "businessPhone"]
+    },
+    "AvailabilityDay": {
+      "title": "AvailabilityDay",
+      "description": "Owner availability status for a specific calendar date",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "maxLength": 20 },
+        "status": { "type": "string", "enum": ["available", "limited", "flight", "booked"], "maxLength": 20 },
+        "note": { "type": "string", "maxLength": 300 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["date", "status"]
+    },
+    "Promotion": {
+      "title": "Promotion",
+      "description": "Promotional discount code configuration",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "maxLength": 40 },
+        "discountType": { "type": "string", "enum": ["percentage", "fixed"], "maxLength": 20 },
+        "discountValue": { "type": "number" },
+        "description": { "type": "string", "maxLength": 300 },
+        "isPermanent": { "type": "boolean" },
+        "expiresAt": { "type": "string", "maxLength": 40 },
+        "minSpend": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["code", "discountType", "discountValue", "description", "isPermanent", "isActive"]
+    },
+    "MediaItem": {
+      "title": "MediaItem",
+      "description": "Media photo gallery item",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 150 },
+        "url": { "type": "string", "maxLength": 800000 },
+        "category": { "type": "string", "enum": ["childcare", "passport_travel", "hair_locs", "adventures", "branding"], "maxLength": 40 },
+        "caption": { "type": "string", "maxLength": 400 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["title", "url", "category", "createdAt"]
+    },
+    "CareProfile": {
+      "title": "CareProfile",
+      "description": "Private family, child, medical, and pet care profile for a client",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "parentName": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "email": { "type": "string", "maxLength": 150 },
+        "homeAddress": { "type": "string", "maxLength": 300 },
+        "emergencyContactName": { "type": "string", "maxLength": 150 },
+        "emergencyContactPhone": { "type": "string", "maxLength": 40 },
+        "pediatricianInfo": { "type": "string", "maxLength": 300 },
+        "childrenDetails": { "type": "string", "maxLength": 1500 },
+        "allergiesAndMedical": { "type": "string", "maxLength": 1500 },
+        "dailyRoutines": { "type": "string", "maxLength": 1500 },
+        "petCareDetails": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["userId", "parentName", "updatedAt"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Customer service reservation and travel itinerary",
+      "type": "object",
+      "properties": {
+        "clientUid": { "type": "string", "maxLength": 128 },
+        "confirmationCode": { "type": "string", "maxLength": 30 },
+        "serviceId": { "type": "string", "maxLength": 100 },
+        "serviceTitle": { "type": "string", "maxLength": 200 },
+        "clientName": { "type": "string", "maxLength": 150 },
+        "clientPhone": { "type": "string", "maxLength": 40 },
+        "clientEmail": { "type": "string", "maxLength": 150 },
+        "serviceDate": { "type": "string", "maxLength": 30 },
+        "startTime": { "type": "string", "maxLength": 40 },
+        "hours": { "type": "number" },
+        "childrenCount": { "type": "number" },
+        "childrenDetails": { "type": "string", "maxLength": 1500 },
+        "locationAddress": { "type": "string", "maxLength": 400 },
+        "specialRequests": { "type": "string", "maxLength": 1500 },
+        "estimatedTotal": { "type": "number" },
+        "requiredDeposit": { "type": "number" },
+        "depositPaid": { "type": "boolean" },
+        "finalPaid": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "in_progress", "completed", "cancelled"], "maxLength": 30 },
+        "flightAirline": { "type": "string", "maxLength": 100 },
+        "flightNumber": { "type": "string", "maxLength": 50 },
+        "flightDeparture": { "type": "string", "maxLength": 150 },
+        "flightDestination": { "type": "string", "maxLength": 150 },
+        "flightTerminal": { "type": "string", "maxLength": 100 },
+        "hotelName": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string", "maxLength": 60 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": [
+        "clientUid",
+        "confirmationCode",
+        "serviceId",
+        "serviceTitle",
+        "clientName",
+        "clientPhone",
+        "clientEmail",
+        "serviceDate",
+        "startTime",
+        "hours",
+        "childrenCount",
+        "locationAddress",
+        "estimatedTotal",
+        "requiredDeposit",
+        "depositPaid",
+        "finalPaid",
+        "status",
+        "createdAt"
+      ]
+    },
+    "LiveUpdate": {
+      "title": "LiveUpdate",
+      "description": "Real-time check-in update or message inside a booking",
+      "type": "object",
+      "properties": {
+        "bookingId": { "type": "string", "maxLength": 128 },
+        "authorUid": { "type": "string", "maxLength": 128 },
+        "authorName": { "type": "string", "maxLength": 120 },
+        "authorRole": { "type": "string", "enum": ["client", "nana"], "maxLength": 20 },
+        "message": { "type": "string", "maxLength": 1000 },
+        "type": { "type": "string", "enum": ["checkin", "photo", "flight", "milestone", "message"], "maxLength": 30 },
+        "timeLabel": { "type": "string", "maxLength": 60 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["bookingId", "authorUid", "authorName", "authorRole", "message", "type", "timeLabel", "createdAt"]
+    },
+    "AdminRole": {
+      "title": "AdminRole",
+      "description": "Registered admin user record",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["owner"], "maxLength": 20 },
+        "createdAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["uid", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/siteConfig/{configId}": {
+      "schema": { "$ref": "#/entities/SiteConfig" },
+      "description": "Public site configuration, copy, theme colors, and rates"
+    },
+    "/availability/{dateId}": {
+      "schema": { "$ref": "#/entities/AvailabilityDay" },
+      "description": "Owner availability calendar slots"
+    },
+    "/promotions/{promoId}": {
+      "schema": { "$ref": "#/entities/Promotion" },
+      "description": "Promotional discount codes"
+    },
+    "/mediaGallery/{mediaId}": {
+      "schema": { "$ref": "#/entities/MediaItem" },
+      "description": "Photo gallery items"
+    },
+    "/careProfiles/{userId}": {
+      "schema": { "$ref": "#/entities/CareProfile" },
+      "description": "Private family care dossier per authenticated client"
+    },
+    "/bookings/{bookingId}": {
+      "schema": { "$ref": "#/entities/Booking" },
+      "description": "Customer bookings and flight itineraries"
+    },
+    "/bookings/{bookingId}/liveUpdates/{updateId}": {
+      "schema": { "$ref": "#/entities/LiveUpdate" },
+      "description": "Real-time check-ins and two-way messages for a specific booking"
+    },
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRole" },
+      "description": "Authorized business owners/admins"
+    }
+  }
+}

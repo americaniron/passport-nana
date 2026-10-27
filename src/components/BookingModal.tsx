@@ -48,7 +48,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialChildrenCount,
 }) => {
   const { isDark } = useTheme();
-  const { siteCopy, addBooking, applyPromoCode, getAvailabilityForDate } = useBusiness();
+  const { currentUser, careProfile, siteCopy, addBooking, applyPromoCode, getAvailabilityForDate } = useBusiness();
 
   const [serviceId, setServiceId] = useState<string>(initialServiceId || 'nanny-services');
   const [clientName, setClientName] = useState<string>('');
@@ -79,6 +79,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     if (initialHours) setHours(initialHours);
     if (initialChildrenCount) setChildrenCount(initialChildrenCount);
   }, [initialServiceId, initialHours, initialChildrenCount]);
+
+  useEffect(() => {
+    if (careProfile) {
+      if (!clientName && careProfile.parentName) setClientName(careProfile.parentName);
+      if (!clientPhone && careProfile.phone) setClientPhone(careProfile.phone);
+      if (!clientEmail && careProfile.email) setClientEmail(careProfile.email);
+      if (!locationAddress && careProfile.homeAddress) setLocationAddress(careProfile.homeAddress);
+      if (!specialRequests && careProfile.childrenDetails) setSpecialRequests(careProfile.childrenDetails);
+    } else if (currentUser) {
+      if (!clientName && currentUser.displayName) setClientName(currentUser.displayName);
+      if (!clientEmail && currentUser.email) setClientEmail(currentUser.email);
+    }
+  }, [careProfile, currentUser]);
 
   if (!isOpen) return null;
 
@@ -117,7 +130,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const validationResult = validateBookingForm({
@@ -125,6 +138,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       clientPhone,
       clientEmail,
       serviceDate,
+      startTime,
       hours: isHourly ? hours : minHours,
       minHours,
     });
@@ -139,50 +153,52 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
     const refCode = generateBookingReference();
 
-    const newBooking: BookingRequest = {
-      id: `booking-${Date.now()}`,
-      serviceId: currentService.id,
-      serviceTitle: currentService.title,
-      clientName,
-      clientPhone,
-      clientEmail,
-      serviceDate,
-      startTime,
-      hours: isHourly ? hours : currentService.defaultDurationHours || 4,
-      childrenCount,
-      childrenDetails: childrenDetails || specialRequests,
-      locationAddress: locationAddress || 'Family Residence / Hotel / Airport Location',
-      specialRequests: `${specialRequests}${appliedPromoCode ? ` [Promo applied: ${appliedPromoCode} (-$${promoDiscount})]` : ''}`,
-      estimatedTotal: finalTotal,
-      requiredDeposit: finalDeposit,
-      status: 'confirmed',
-      createdAt: new Date().toISOString(),
-      confirmationCode: refCode,
-    };
+    try {
+      const savedRecord = await addBooking({
+        confirmationCode: refCode,
+        serviceId: currentService.id,
+        serviceTitle: currentService.title,
+        clientName,
+        clientPhone,
+        clientEmail,
+        serviceDate,
+        startTime,
+        hours: isHourly ? hours : currentService.defaultDurationHours || 4,
+        childrenCount,
+        childrenDetails: childrenDetails || specialRequests,
+        locationAddress: locationAddress || 'Family Residence / Hotel / Airport Location',
+        specialRequests: `${specialRequests}${appliedPromoCode ? ` [Promo: ${appliedPromoCode} (-$${promoDiscount})]` : ''}`,
+        estimatedTotal: finalTotal,
+        requiredDeposit: finalDeposit,
+      });
 
-    // Also persist into BusinessContext so Client Portal and Admin Dashboard see it immediately
-    addBooking({
-      confirmationCode: refCode,
-      serviceId: currentService.id,
-      serviceTitle: currentService.title,
-      clientName,
-      clientPhone,
-      clientEmail,
-      serviceDate,
-      startTime,
-      hours: isHourly ? hours : currentService.defaultDurationHours || 4,
-      childrenCount,
-      childrenDetails: childrenDetails || specialRequests,
-      locationAddress: locationAddress || 'Family Residence / Hotel / Airport Location',
-      specialRequests: `${specialRequests}${appliedPromoCode ? ` [Promo: ${appliedPromoCode}]` : ''}`,
-      estimatedTotal: finalTotal,
-      requiredDeposit: finalDeposit,
-    });
-
-    setTimeout(() => {
-      setConfirmedBooking(newBooking);
+      setConfirmedBooking({
+        id: savedRecord.id,
+        serviceId: savedRecord.serviceId,
+        serviceTitle: savedRecord.serviceTitle,
+        clientName: savedRecord.clientName,
+        clientPhone: savedRecord.clientPhone,
+        clientEmail: savedRecord.clientEmail,
+        serviceDate: savedRecord.serviceDate,
+        startTime: savedRecord.startTime,
+        hours: savedRecord.hours,
+        childrenCount: savedRecord.childrenCount,
+        childrenDetails: savedRecord.childrenDetails || '',
+        locationAddress: savedRecord.locationAddress,
+        specialRequests: savedRecord.specialRequests,
+        estimatedTotal: savedRecord.estimatedTotal,
+        requiredDeposit: savedRecord.requiredDeposit,
+        status: 'confirmed',
+        createdAt: savedRecord.createdAt,
+        confirmationCode: savedRecord.confirmationCode,
+      });
+    } catch (err) {
+      setFormErrors({
+        clientName: err instanceof Error ? err.message : 'Unable to save booking. Please sign in with Google.',
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 600);
+    }
   };
 
   const handleDownloadCalendar = () => {

@@ -87,9 +87,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo brand: Passport Nana */}
-          <a href="#" className="flex items-center">
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center text-left cursor-pointer"
+          >
             <PassportNanaLogo variant="full" size="md" />
-          </a>
+          </button>
 
           {/* Desktop Nav Links */}
           <nav

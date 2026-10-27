@@ -1,0 +1,307 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Primitive Helpers
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == "info@fixmyiron.com" && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidSiteConfig(data) {
+      return data.keys().hasAll(['heroTitle', 'businessPhone']) &&
+        data.keys().hasOnly([
+          'heroTagline', 'heroTitle', 'heroSubtitle', 'aboutHeadline', 'aboutBio',
+          'founderName', 'businessPhone', 'businessEmail', 'emergencyLine', 'serviceHubs',
+          'announcementBanner', 'showAnnouncement', 'darkBg', 'darkCard', 'darkAccentGold',
+          'darkText', 'lightBg', 'lightCard', 'lightAccentGold', 'lightText',
+          'nannyHourly', 'passportTravelHourly', 'schoolPickupRate', 'adventureDayHourly',
+          'petNannyHourly', 'braidsBase', 'locRetwistBase', 'additionalChildRate',
+          'standardMinHours', 'updatedAt'
+        ]) &&
+        data.heroTitle is string && data.heroTitle.size() <= 300 &&
+        data.businessPhone is string && data.businessPhone.size() <= 40 &&
+        (!('heroTagline' in data) || (data.heroTagline is string && data.heroTagline.size() <= 200)) &&
+        (!('heroSubtitle' in data) || (data.heroSubtitle is string && data.heroSubtitle.size() <= 600)) &&
+        (!('aboutHeadline' in data) || (data.aboutHeadline is string && data.aboutHeadline.size() <= 300)) &&
+        (!('aboutBio' in data) || (data.aboutBio is string && data.aboutBio.size() <= 2000)) &&
+        (!('founderName' in data) || (data.founderName is string && data.founderName.size() <= 120)) &&
+        (!('businessEmail' in data) || (data.businessEmail is string && data.businessEmail.size() <= 150)) &&
+        (!('emergencyLine' in data) || (data.emergencyLine is string && data.emergencyLine.size() <= 100)) &&
+        (!('serviceHubs' in data) || (data.serviceHubs is string && data.serviceHubs.size() <= 300)) &&
+        (!('announcementBanner' in data) || (data.announcementBanner is string && data.announcementBanner.size() <= 300)) &&
+        (!('showAnnouncement' in data) || data.showAnnouncement is bool) &&
+        (!('darkBg' in data) || (data.darkBg is string && data.darkBg.size() <= 20)) &&
+        (!('darkCard' in data) || (data.darkCard is string && data.darkCard.size() <= 20)) &&
+        (!('darkAccentGold' in data) || (data.darkAccentGold is string && data.darkAccentGold.size() <= 20)) &&
+        (!('darkText' in data) || (data.darkText is string && data.darkText.size() <= 20)) &&
+        (!('lightBg' in data) || (data.lightBg is string && data.lightBg.size() <= 20)) &&
+        (!('lightCard' in data) || (data.lightCard is string && data.lightCard.size() <= 20)) &&
+        (!('lightAccentGold' in data) || (data.lightAccentGold is string && data.lightAccentGold.size() <= 20)) &&
+        (!('lightText' in data) || (data.lightText is string && data.lightText.size() <= 20)) &&
+        (!('nannyHourly' in data) || data.nannyHourly is number) &&
+        (!('passportTravelHourly' in data) || data.passportTravelHourly is number) &&
+        (!('schoolPickupRate' in data) || data.schoolPickupRate is number) &&
+        (!('adventureDayHourly' in data) || data.adventureDayHourly is number) &&
+        (!('petNannyHourly' in data) || data.petNannyHourly is number) &&
+        (!('braidsBase' in data) || data.braidsBase is number) &&
+        (!('locRetwistBase' in data) || data.locRetwistBase is number) &&
+        (!('additionalChildRate' in data) || data.additionalChildRate is number) &&
+        (!('standardMinHours' in data) || data.standardMinHours is number) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60));
+    }
+
+    function isValidAvailabilityDay(data) {
+      return data.keys().hasAll(['date', 'status']) &&
+        data.keys().hasOnly(['date', 'status', 'note', 'updatedAt']) &&
+        data.date is string && data.date.size() <= 20 &&
+        data.status is string && data.status in ['available', 'limited', 'flight', 'booked'] &&
+        (!('note' in data) || (data.note is string && data.note.size() <= 300)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60));
+    }
+
+    function isValidPromotion(data) {
+      return data.keys().hasAll(['code', 'discountType', 'discountValue', 'description', 'isPermanent', 'isActive']) &&
+        data.keys().hasOnly(['code', 'discountType', 'discountValue', 'description', 'isPermanent', 'expiresAt', 'minSpend', 'isActive', 'createdAt']) &&
+        data.code is string && data.code.size() >= 2 && data.code.size() <= 40 &&
+        data.discountType is string && data.discountType in ['percentage', 'fixed'] &&
+        data.discountValue is number && data.discountValue >= 0 &&
+        data.description is string && data.description.size() <= 300 &&
+        data.isPermanent is bool &&
+        data.isActive is bool &&
+        (!('expiresAt' in data) || (data.expiresAt is string && data.expiresAt.size() <= 40)) &&
+        (!('minSpend' in data) || (data.minSpend is number && data.minSpend >= 0)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 60));
+    }
+
+    function isValidMediaItem(data) {
+      return data.keys().hasAll(['title', 'url', 'category', 'createdAt']) &&
+        data.keys().hasOnly(['title', 'url', 'category', 'caption', 'createdAt']) &&
+        data.title is string && data.title.size() <= 150 &&
+        data.url is string && data.url.size() <= 800000 &&
+        data.category is string && data.category in ['childcare', 'passport_travel', 'hair_locs', 'adventures', 'branding'] &&
+        data.createdAt is string && data.createdAt.size() <= 60 &&
+        (!('caption' in data) || (data.caption is string && data.caption.size() <= 400));
+    }
+
+    function isValidCareProfile(data) {
+      return data.keys().hasAll(['userId', 'parentName', 'updatedAt']) &&
+        data.keys().hasOnly([
+          'userId', 'parentName', 'phone', 'email', 'homeAddress',
+          'emergencyContactName', 'emergencyContactPhone', 'pediatricianInfo',
+          'childrenDetails', 'allergiesAndMedical', 'dailyRoutines', 'petCareDetails', 'updatedAt'
+        ]) &&
+        data.userId is string && data.userId.size() <= 128 &&
+        data.parentName is string && data.parentName.size() <= 150 &&
+        data.updatedAt is string && data.updatedAt.size() <= 60 &&
+        (!('phone' in data) || (data.phone is string && data.phone.size() <= 40)) &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 150)) &&
+        (!('homeAddress' in data) || (data.homeAddress is string && data.homeAddress.size() <= 300)) &&
+        (!('emergencyContactName' in data) || (data.emergencyContactName is string && data.emergencyContactName.size() <= 150)) &&
+        (!('emergencyContactPhone' in data) || (data.emergencyContactPhone is string && data.emergencyContactPhone.size() <= 40)) &&
+        (!('pediatricianInfo' in data) || (data.pediatricianInfo is string && data.pediatricianInfo.size() <= 300)) &&
+        (!('childrenDetails' in data) || (data.childrenDetails is string && data.childrenDetails.size() <= 1500)) &&
+        (!('allergiesAndMedical' in data) || (data.allergiesAndMedical is string && data.allergiesAndMedical.size() <= 1500)) &&
+        (!('dailyRoutines' in data) || (data.dailyRoutines is string && data.dailyRoutines.size() <= 1500)) &&
+        (!('petCareDetails' in data) || (data.petCareDetails is string && data.petCareDetails.size() <= 1000));
+    }
+
+    function isValidBooking(data) {
+      return data.keys().hasAll([
+          'clientUid', 'confirmationCode', 'serviceId', 'serviceTitle',
+          'clientName', 'clientPhone', 'clientEmail', 'serviceDate',
+          'startTime', 'hours', 'childrenCount', 'locationAddress',
+          'estimatedTotal', 'requiredDeposit', 'depositPaid', 'finalPaid',
+          'status', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'clientUid', 'confirmationCode', 'serviceId', 'serviceTitle',
+          'clientName', 'clientPhone', 'clientEmail', 'serviceDate',
+          'startTime', 'hours', 'childrenCount', 'childrenDetails',
+          'locationAddress', 'specialRequests', 'estimatedTotal',
+          'requiredDeposit', 'depositPaid', 'finalPaid', 'status',
+          'flightAirline', 'flightNumber', 'flightDeparture',
+          'flightDestination', 'flightTerminal', 'hotelName',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.clientUid is string && data.clientUid.size() <= 128 &&
+        data.confirmationCode is string && data.confirmationCode.size() <= 30 &&
+        data.serviceId is string && data.serviceId.size() <= 100 &&
+        data.serviceTitle is string && data.serviceTitle.size() <= 200 &&
+        data.clientName is string && data.clientName.size() <= 150 &&
+        data.clientPhone is string && data.clientPhone.size() <= 40 &&
+        data.clientEmail is string && data.clientEmail.size() <= 150 &&
+        data.serviceDate is string && data.serviceDate.size() <= 30 &&
+        data.startTime is string && data.startTime.size() <= 40 &&
+        data.hours is number && data.hours >= 0.5 && data.hours <= 720 &&
+        data.childrenCount is number && data.childrenCount >= 1 && data.childrenCount <= 20 &&
+        data.locationAddress is string && data.locationAddress.size() <= 400 &&
+        data.estimatedTotal is number && data.estimatedTotal >= 0 &&
+        data.requiredDeposit is number && data.requiredDeposit >= 0 &&
+        data.depositPaid is bool &&
+        data.finalPaid is bool &&
+        data.status is string && data.status in ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'] &&
+        data.createdAt is string && data.createdAt.size() <= 60 &&
+        (!('childrenDetails' in data) || (data.childrenDetails is string && data.childrenDetails.size() <= 1500)) &&
+        (!('specialRequests' in data) || (data.specialRequests is string && data.specialRequests.size() <= 1500)) &&
+        (!('flightAirline' in data) || (data.flightAirline is string && data.flightAirline.size() <= 100)) &&
+        (!('flightNumber' in data) || (data.flightNumber is string && data.flightNumber.size() <= 50)) &&
+        (!('flightDeparture' in data) || (data.flightDeparture is string && data.flightDeparture.size() <= 150)) &&
+        (!('flightDestination' in data) || (data.flightDestination is string && data.flightDestination.size() <= 150)) &&
+        (!('flightTerminal' in data) || (data.flightTerminal is string && data.flightTerminal.size() <= 100)) &&
+        (!('hotelName' in data) || (data.hotelName is string && data.hotelName.size() <= 200)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60));
+    }
+
+    function isValidLiveUpdate(data) {
+      return data.keys().hasAll([
+          'bookingId', 'authorUid', 'authorName', 'authorRole',
+          'message', 'type', 'timeLabel', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'bookingId', 'authorUid', 'authorName', 'authorRole',
+          'message', 'type', 'timeLabel', 'createdAt'
+        ]) &&
+        data.bookingId is string && data.bookingId.size() <= 128 &&
+        data.authorUid is string && data.authorUid.size() <= 128 &&
+        data.authorName is string && data.authorName.size() <= 120 &&
+        data.authorRole is string && data.authorRole in ['client', 'nana'] &&
+        data.message is string && data.message.size() >= 1 && data.message.size() <= 1000 &&
+        data.type is string && data.type in ['checkin', 'photo', 'flight', 'milestone', 'message'] &&
+        data.timeLabel is string && data.timeLabel.size() <= 60 &&
+        data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    function isValidAdminRole(data) {
+      return data.keys().hasAll(['uid', 'role', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'email', 'role', 'pinPasscode', 'createdAt']) &&
+        data.uid is string && data.uid.size() <= 128 &&
+        data.role is string && data.role == 'owner' &&
+        data.createdAt is string && data.createdAt.size() <= 60 &&
+        (!('email' in data) || (data.email is string && data.email.size() <= 150)) &&
+        (!('pinPasscode' in data) || (data.pinPasscode is string && data.pinPasscode.size() <= 40));
+    }
+
+    // 4. Collection Rules
+    match /siteConfig/{configId} {
+      allow get: if isValidId(configId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(configId) && isValidSiteConfig(incoming());
+      allow delete: if isAdmin() && isValidId(configId);
+    }
+
+    match /availability/{dateId} {
+      allow get: if isValidId(dateId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(dateId) && isValidAvailabilityDay(incoming());
+      allow delete: if isAdmin() && isValidId(dateId);
+    }
+
+    match /promotions/{promoId} {
+      allow get: if isValidId(promoId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(promoId) && isValidPromotion(incoming());
+      allow delete: if isAdmin() && isValidId(promoId);
+    }
+
+    match /mediaGallery/{mediaId} {
+      allow get: if isValidId(mediaId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(mediaId) && isValidMediaItem(incoming());
+      allow delete: if isAdmin() && isValidId(mediaId);
+    }
+
+    match /careProfiles/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isValidId(userId) && (isOwner(userId) || isAdmin()) && isValidCareProfile(incoming()) && incoming().userId == userId;
+      allow update: if isValidId(userId) && isValidCareProfile(incoming()) && incoming().userId == existing().userId && (isOwner(userId) || isAdmin());
+      allow delete: if isValidId(userId) && isAdmin();
+    }
+
+    match /bookings/{bookingId} {
+      allow get: if isValidId(bookingId) && (isAdmin() || (isSignedIn() && resource.data.clientUid == request.auth.uid));
+      allow list: if isAdmin() || (isSignedIn() && resource.data.clientUid == request.auth.uid);
+      allow create: if isSignedIn() && isValidId(bookingId) && isValidBooking(incoming()) && incoming().clientUid == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(bookingId) && isValidBooking(incoming()) &&
+        incoming().clientUid == existing().clientUid &&
+        incoming().createdAt == existing().createdAt && (
+          isAdmin() || (
+            existing().clientUid == request.auth.uid &&
+            existing().status != 'completed' &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'flightAirline', 'flightNumber', 'flightDeparture',
+              'flightDestination', 'flightTerminal', 'hotelName',
+              'specialRequests', 'childrenDetails', 'locationAddress',
+              'status', 'depositPaid', 'updatedAt'
+            ])
+          )
+        );
+      allow delete: if isValidId(bookingId) && isAdmin();
+
+      match /liveUpdates/{updateId} {
+        allow get: if isValidId(bookingId) && isValidId(updateId) && (
+          isAdmin() || (
+            isSignedIn() &&
+            get(/databases/$(database)/documents/bookings/$(bookingId)).data.clientUid == request.auth.uid
+          )
+        );
+        allow list: if isValidId(bookingId) && (
+          isAdmin() || (
+            isSignedIn() &&
+            get(/databases/$(database)/documents/bookings/$(bookingId)).data.clientUid == request.auth.uid
+          )
+        );
+        allow create: if isSignedIn() && isValidId(bookingId) && isValidId(updateId) &&
+          isValidLiveUpdate(incoming()) &&
+          incoming().bookingId == bookingId &&
+          incoming().authorUid == request.auth.uid && (
+            isAdmin() || (
+              incoming().authorRole == 'client' &&
+              get(/databases/$(database)/documents/bookings/$(bookingId)).data.clientUid == request.auth.uid
+            )
+          );
+        allow update, delete: if isValidId(bookingId) && isValidId(updateId) && isAdmin();
+      }
+    }
+
+    match /admins/{adminUid} {
+      allow get: if isValidId(adminUid) && (isOwner(adminUid) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isValidId(adminUid) && isOwner(adminUid) &&
+        isValidAdminRole(incoming()) &&
+        incoming().uid == request.auth.uid && (
+          isAdmin() || incoming().pinPasscode == "nana2026"
+        );
+      allow update, delete: if isValidId(adminUid) && isAdmin();
+    }
+  }
+}

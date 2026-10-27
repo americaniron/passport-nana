@@ -123,43 +123,40 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setTimeout(() => setSaveSuccessNotice(null), 3000);
   };
 
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (adminLogin(pinInput)) {
+    const ok = await adminLogin(pinInput);
+    if (ok) {
       setAuthError('');
       setPinInput('');
     } else {
-      setAuthError('Incorrect PIN. (Default PIN: nana2026)');
+      setAuthError('Invalid owner PIN or authentication cancelled.');
     }
   };
 
-  const handleQuickUnlock = () => {
-    adminLogin('nana2026');
-  };
-
-  const handleSaveCopy = (e: React.FormEvent) => {
+  const handleSaveCopy = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSiteCopy(copyForm);
-    showNotice('Site copy updated successfully!');
+    await updateSiteCopy(copyForm);
+    showNotice('Site copy saved to Cloud Firestore!');
   };
 
-  const handleSaveTheme = (e: React.FormEvent) => {
+  const handleSaveTheme = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateThemeColors(themeForm);
-    showNotice('Visual theme colors updated live across the site!');
+    await updateThemeColors(themeForm);
+    showNotice('Visual theme colors saved to Cloud Firestore!');
   };
 
-  const handleSavePricing = (e: React.FormEvent) => {
+  const handleSavePricing = async (e: React.FormEvent) => {
     e.preventDefault();
-    updatePricingRates(pricingForm);
-    showNotice('Pricing and rates updated!');
+    await updatePricingRates(pricingForm);
+    showNotice('Pricing and rates saved to Cloud Firestore!');
   };
 
-  const handleCreatePromo = (e: React.FormEvent) => {
+  const handleCreatePromo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPromoCode.trim()) return;
 
-    addPromotion({
+    await addPromotion({
       code: newPromoCode.trim(),
       discountType: newPromoType,
       discountValue: Number(newPromoValue),
@@ -172,7 +169,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
     setNewPromoCode('');
     setNewPromoDesc('');
-    showNotice('New promotion code created!');
+    showNotice('New promotion code published!');
   };
 
   const handleUploadImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -188,11 +185,11 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     }
   };
 
-  const handleCreateMedia = (e: React.FormEvent) => {
+  const handleCreateMedia = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMediaUrl) return;
 
-    addMediaItem({
+    await addMediaItem({
       title: newMediaTitle || 'Passport Nana Gallery Item',
       url: newMediaUrl,
       category: newMediaCategory,
@@ -202,13 +199,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setNewMediaTitle('');
     setNewMediaUrl('');
     setNewMediaCaption('');
-    showNotice('New media item added to gallery!');
+    showNotice('New media item uploaded to Cloud Gallery!');
   };
 
-  const handleSetCalendarDate = (e: React.FormEvent) => {
+  const handleSetCalendarDate = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateDayAvailability(selectedDateToEdit, selectedStatusToSet, selectedNoteToSet);
-    showNotice(`Availability updated for ${selectedDateToEdit} (${selectedStatusToSet.toUpperCase()})`);
+    await updateDayAvailability(selectedDateToEdit, selectedStatusToSet, selectedNoteToSet);
+    showNotice(`Availability saved for ${selectedDateToEdit} (${selectedStatusToSet.toUpperCase()})`);
   };
 
   // Filter bookings
@@ -303,7 +300,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                   type="password"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
-                  placeholder="Enter PIN (Default: nana2026)"
+                  placeholder="Enter Owner Security PIN"
                   className={`w-full px-4 py-3 rounded-2xl border text-center font-mono text-base tracking-widest focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
                     isDark ? 'bg-[#061833] border-white/20 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
@@ -314,22 +311,12 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Unlock className="w-4 h-4" />
-                <span>Unlock Admin Dashboard</span>
+                <span>Sign In & Unlock Owner Hub</span>
               </button>
             </form>
-
-            <div className="mt-6 pt-4 border-t border-white/10 w-full flex items-center justify-between text-xs">
-              <span className="opacity-60">Reviewer Quick Access:</span>
-              <button
-                onClick={handleQuickUnlock}
-                className="px-3 py-1 rounded-lg text-xs font-bold bg-[#d4af37]/20 text-[#d4af37] border border-[#d4af37]/30 hover:bg-[#d4af37]/30"
-              >
-                Quick Unlock (nana2026)
-              </button>
-            </div>
           </div>
         ) : (
           /* Authenticated Dashboard */
