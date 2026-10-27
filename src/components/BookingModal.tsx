@@ -48,12 +48,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialChildrenCount,
 }) => {
   const { isDark } = useTheme();
-  const { currentUser, careProfile, siteCopy, addBooking, applyPromoCode, getAvailabilityForDate } = useBusiness();
+  const {
+    currentUser,
+    careProfile,
+    siteCopy,
+    addBooking,
+    applyPromoCode,
+    getAvailabilityForDate,
+    registerWithEmail,
+    signInWithEmail,
+  } = useBusiness();
 
   const [serviceId, setServiceId] = useState<string>(initialServiceId || 'nanny-services');
   const [clientName, setClientName] = useState<string>('');
   const [clientPhone, setClientPhone] = useState<string>('');
   const [clientEmail, setClientEmail] = useState<string>('');
+  const [accountPassword, setAccountPassword] = useState<string>('');
+  const [isExistingAccount, setIsExistingAccount] = useState<boolean>(false);
   const [serviceDate, setServiceDate] = useState<string>('');
   const [startTime, setStartTime] = useState<string>('09:00 AM');
   const [hours, setHours] = useState<number>(initialHours || 4);
@@ -154,6 +165,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({
     const refCode = generateBookingReference();
 
     try {
+      if (!currentUser && accountPassword.trim()) {
+        if (isExistingAccount) {
+          await signInWithEmail(clientEmail, accountPassword);
+        } else {
+          await registerWithEmail(clientName, clientPhone, clientEmail, accountPassword);
+        }
+      }
+
       const savedRecord = await addBooking({
         confirmationCode: refCode,
         serviceId: currentService.id,
@@ -194,7 +213,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
       });
     } catch (err) {
       setFormErrors({
-        clientName: err instanceof Error ? err.message : 'Unable to save booking. Please sign in with Google.',
+        clientName: err instanceof Error ? err.message : 'Unable to save booking. Please enter a portal password or sign in.',
       });
     } finally {
       setIsSubmitting(false);
@@ -518,6 +537,39 @@ END:VCALENDAR`;
                   <p className="text-[11px] text-rose-400 mt-1">{formErrors.clientEmail}</p>
                 )}
               </div>
+
+              {/* Client Portal Password for Non-Google Users */}
+              {!currentUser && (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold opacity-90">
+                      {isExistingAccount ? 'Your Portal Password' : 'Create Portal Password (No Google required)'}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsExistingAccount(!isExistingAccount)}
+                      className="text-[10px] font-bold text-[#d4af37] hover:underline cursor-pointer"
+                    >
+                      {isExistingAccount ? 'New Client? Create Account' : 'Have an account? Sign In'}
+                    </button>
+                  </div>
+                  <input
+                    type="password"
+                    value={accountPassword}
+                    onChange={(e) => setAccountPassword(e.target.value)}
+                    placeholder={
+                      isExistingAccount
+                        ? 'Enter your existing password'
+                        : '6+ chars (or leave blank to use Google Sign-In)'
+                    }
+                    className={`w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
+                      isDark
+                        ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                        : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                    }`}
+                  />
+                </div>
+              )}
 
               {/* Service Date Input */}
               <div>

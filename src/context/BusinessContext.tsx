@@ -4,6 +4,10 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
 } from 'firebase/auth';
 import {
   collection,
@@ -41,6 +45,14 @@ interface BusinessContextType {
   currentUser: FirebaseUser | null;
   isAuthReady: boolean;
   signInWithGoogle: () => Promise<FirebaseUser | null>;
+  registerWithEmail: (
+    fullName: string,
+    phone: string,
+    email: string,
+    password: string
+  ) => Promise<FirebaseUser>;
+  signInWithEmail: (email: string, password: string) => Promise<FirebaseUser>;
+  resetPassword: (email: string) => Promise<void>;
   signOutUser: () => Promise<void>;
 
   // Site Copy
@@ -457,6 +469,50 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       console.error('Google Sign-In error:', error);
       return null;
     }
+  };
+
+  const registerWithEmail = async (
+    fullName: string,
+    phone: string,
+    email: string,
+    password: string
+  ): Promise<FirebaseUser> => {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    if (fullName.trim()) {
+      await updateProfile(credential.user, { displayName: fullName.trim() });
+    }
+    // Automatically initialize the client's CareProfile in Firestore
+    const nowIso = new Date().toISOString();
+    const initialProfile: CareProfile = {
+      userId: credential.user.uid,
+      parentName: fullName.trim().slice(0, 150),
+      phone: phone.trim().slice(0, 40),
+      email: email.trim().slice(0, 150),
+      homeAddress: '',
+      emergencyContactName: '',
+      emergencyContactPhone: '',
+      pediatricianInfo: '',
+      childrenDetails: '',
+      allergiesAndMedical: '',
+      dailyRoutines: '',
+      petCareDetails: '',
+      updatedAt: nowIso,
+    };
+    try {
+      await setDoc(doc(db, 'careProfiles', credential.user.uid), initialProfile);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `careProfiles/${credential.user.uid}`);
+    }
+    return credential.user;
+  };
+
+  const signInWithEmail = async (email: string, password: string): Promise<FirebaseUser> => {
+    const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+    return credential.user;
+  };
+
+  const resetPassword = async (email: string): Promise<void> => {
+    await sendPasswordResetEmail(auth, email.trim());
   };
 
   const signOutUser = async (): Promise<void> => {
@@ -908,6 +964,9 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         currentUser,
         isAuthReady,
         signInWithGoogle,
+        registerWithEmail,
+        signInWithEmail,
+        resetPassword,
         signOutUser,
         siteCopy,
         updateSiteCopy,

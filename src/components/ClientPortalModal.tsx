@@ -24,6 +24,11 @@ import {
   Plus,
   Edit3,
   Ban,
+  Mail,
+  Lock,
+  User,
+  UserPlus,
+  KeyRound,
 } from 'lucide-react';
 import { LiveUpdateRecord } from '../types/business.ts';
 import { formatCurrency } from '../utils/pricing.ts';
@@ -44,6 +49,9 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
     currentUser,
     isAuthReady,
     signInWithGoogle,
+    registerWithEmail,
+    signInWithEmail,
+    resetPassword,
     signOutUser,
     bookings,
     bookingsLoading,
@@ -54,6 +62,15 @@ export const ClientPortalModal: React.FC<ClientPortalModalProps> = ({
     updateBookingFlight,
     updateBookingClientNotes,
   } = useBusiness();
+
+  // Auth form states for non-Google registration & sign-in
+  const [authMode, setAuthMode] = useState<'signin' | 'register' | 'reset'>('signin');
+  const [authFullName, setAuthFullName] = useState('');
+  const [authPhone, setAuthPhone] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [selectedBookingId, setSelectedBookingId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<
@@ -433,35 +450,239 @@ END:VCALENDAR`;
             Verifying secure session...
           </div>
         ) : !currentUser ? (
-          <div className="flex-1 p-8 sm:p-12 flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-5">
-            <div className="w-16 h-16 rounded-3xl bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] shadow-xl">
-              <ShieldCheck className="w-8 h-8" />
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-serif font-black text-2xl text-[#d4af37]">
-                Family Client Sign-In
-              </h4>
-              <p className="text-xs sm:text-sm opacity-80 leading-relaxed">
-                Sign in with your Google account to view your active bookings, update flight accompaniment manifests, manage your children’s private care & allergy profile, and message Nana Ken’nyzhae in real time.
-              </p>
-            </div>
-            <button
-              onClick={signInWithGoogle}
-              className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Continue with Google</span>
-            </button>
-            <div className="pt-4 border-t border-white/10 w-full text-xs opacity-75 flex items-center justify-between">
-              <span>Need to schedule your first session?</span>
-              <button
-                onClick={() => {
-                  onClose();
-                  onOpenBooking();
-                }}
-                className="font-bold text-[#d4af37] hover:underline cursor-pointer"
+          <div className="flex-1 p-6 sm:p-10 overflow-y-auto flex flex-col items-center justify-center">
+            <div className="w-full max-w-md space-y-5">
+              <div className="text-center space-y-1.5">
+                <div className="w-14 h-14 rounded-2xl bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] shadow-xl mx-auto mb-2">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                <h4 className="font-serif font-black text-2xl text-[#d4af37]">
+                  {authMode === 'register'
+                    ? 'Create Family Portal Account'
+                    : authMode === 'reset'
+                    ? 'Reset Portal Password'
+                    : 'Family Client Portal Sign-In'}
+                </h4>
+                <p className="text-xs opacity-80 leading-relaxed">
+                  Register or sign in with <strong>any email address</strong> (Yahoo, iCloud, Outlook, work email) or use Google Sign-In.
+                </p>
+              </div>
+
+              {/* Mode Switcher Tabs */}
+              <div
+                className={`grid grid-cols-2 p-1 rounded-2xl border text-xs font-bold ${
+                  isDark ? 'bg-[#030d1d] border-white/10' : 'bg-slate-200/70 border-slate-300'
+                }`}
               >
-                Book Nana Now →
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthError(null);
+                  }}
+                  className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMode === 'signin'
+                      ? 'bg-[#d4af37] text-[#041226] font-black shadow'
+                      : 'opacity-75 hover:opacity-100'
+                  }`}
+                >
+                  <LogIn className="w-3.5 h-3.5" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('register');
+                    setAuthError(null);
+                  }}
+                  className={`py-2 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    authMode === 'register'
+                      ? 'bg-[#d4af37] text-[#041226] font-black shadow'
+                      : 'opacity-75 hover:opacity-100'
+                  }`}
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Register New Account</span>
+                </button>
+              </div>
+
+              {/* Email & Password Form */}
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setAuthError(null);
+                  setAuthLoading(true);
+                  try {
+                    if (authMode === 'register') {
+                      if (authPassword.length < 6) {
+                        throw new Error('Password must be at least 6 characters.');
+                      }
+                      await registerWithEmail(authFullName, authPhone, authEmail, authPassword);
+                      showNotice('Welcome to Passport Nana! Your family portal account is ready.');
+                    } else if (authMode === 'signin') {
+                      await signInWithEmail(authEmail, authPassword);
+                      showNotice('Signed in to your Family Portal.');
+                    } else if (authMode === 'reset') {
+                      await resetPassword(authEmail);
+                      showNotice(`Password reset link sent to ${authEmail}.`);
+                      setAuthMode('signin');
+                    }
+                  } catch (err: unknown) {
+                    const msg = err instanceof Error ? err.message : String(err);
+                    if (msg.includes('auth/operation-not-allowed')) {
+                      setAuthError(
+                        'Email/Password sign-in must be enabled in the Firebase Console (Authentication -> Sign-in method -> Email/Password -> Enable).'
+                      );
+                    } else if (msg.includes('auth/email-already-in-use')) {
+                      setAuthError('An account with this email already exists. Please switch to Sign In.');
+                    } else if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password')) {
+                      setAuthError('Invalid email or password. Please try again or reset your password.');
+                    } else {
+                      setAuthError(msg);
+                    }
+                  } finally {
+                    setAuthLoading(false);
+                  }
+                }}
+                className="space-y-3 text-left text-xs"
+              >
+                {authMode === 'register' && (
+                  <>
+                    <div>
+                      <label className="block font-bold mb-1">Parent / Client Full Name *</label>
+                      <div className="relative">
+                        <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="text"
+                          required
+                          value={authFullName}
+                          onChange={(e) => setAuthFullName(e.target.value)}
+                          placeholder="e.g. Danielle Brooks"
+                          className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
+                            isDark ? 'bg-[#061833] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block font-bold mb-1">Mobile Phone Number *</label>
+                      <div className="relative">
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                        <input
+                          type="tel"
+                          required
+                          value={authPhone}
+                          onChange={(e) => setAuthPhone(e.target.value)}
+                          placeholder="e.g. 305-555-0199"
+                          className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
+                            isDark ? 'bg-[#061833] border-white/15 text-white' : 'bg-white border-slate-300'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div>
+                  <label className="block font-bold mb-1">Email Address (Any Provider) *</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <input
+                      type="email"
+                      required
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      placeholder="you@example.com (iCloud, Yahoo, Outlook, etc.)"
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
+                        isDark ? 'bg-[#061833] border-white/15 text-white' : 'bg-white border-slate-300'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {authMode !== 'reset' && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-bold">Password *</label>
+                      {authMode === 'signin' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMode('reset');
+                            setAuthError(null);
+                          }}
+                          className="text-[11px] text-[#d4af37] hover:underline cursor-pointer"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      <input
+                        type="password"
+                        required
+                        minLength={6}
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder={authMode === 'register' ? 'Create a password (min 6 chars)' : 'Enter your password'}
+                        className={`w-full pl-9 pr-3 py-2.5 rounded-xl border ${
+                          isDark ? 'bg-[#061833] border-white/15 text-white' : 'bg-white border-slate-300'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {authError && (
+                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-medium">
+                    {authError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full py-3 px-6 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {authMode === 'register' ? (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      <span>{authLoading ? 'Creating Account...' : 'Create Family Account'}</span>
+                    </>
+                  ) : authMode === 'reset' ? (
+                    <>
+                      <KeyRound className="w-4 h-4" />
+                      <span>{authLoading ? 'Sending...' : 'Send Password Reset Email'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      <span>{authLoading ? 'Signing In...' : 'Sign In with Email'}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-[11px] uppercase tracking-wider opacity-60 font-bold">Or</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+
+              {/* Google Sign-In Alternative */}
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                className={`w-full py-3 px-6 rounded-2xl border font-bold text-xs shadow-sm hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                  isDark
+                    ? 'bg-[#061833] border-[#d4af37]/40 text-white hover:bg-[#0a2346]'
+                    : 'bg-white border-slate-300 text-[#04142b] hover:bg-slate-50'
+                }`}
+              >
+                <LogIn className="w-4 h-4 text-[#d4af37]" />
+                <span>Continue with Google Account</span>
               </button>
             </div>
           </div>
