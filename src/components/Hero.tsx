@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
 
 interface HeroProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -27,6 +28,11 @@ export const Hero: React.FC<HeroProps> = ({
   onOpenHairAdvisor,
 }) => {
   const { isDark } = useTheme();
+  const { getSiteImage } = useBusiness();
+  const heroImageUrl = getSiteImage(
+    'site_hero_main',
+    '/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp'
+  );
 
   return (
     <section className="relative overflow-hidden pt-10 pb-20 lg:pt-16 lg:pb-28 transition-colors duration-300">
@@ -45,7 +51,7 @@ export const Hero: React.FC<HeroProps> = ({
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Headlines & Value Proposition */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <div className={`${heroImageUrl ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6 text-left`}>
             {/* Top pill badge */}
             <div
               className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs sm:text-sm font-semibold shadow-md ${
@@ -185,58 +191,60 @@ export const Hero: React.FC<HeroProps> = ({
           </div>
 
           {/* Right Column: Hero Art & Passport Nanny Medallion */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative group max-w-md w-full">
-              {/* Outer Golden Glow & Double Frame */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa7c11] rounded-3xl blur-md opacity-40 group-hover:opacity-60 transition duration-700" />
+          {heroImageUrl && (
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative group max-w-md w-full">
+                {/* Outer Golden Glow & Double Frame */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa7c11] rounded-3xl blur-md opacity-40 group-hover:opacity-60 transition duration-700" />
 
-              <div
-                className={`relative rounded-3xl overflow-hidden border-2 border-[#d4af37]/60 shadow-2xl ${
-                  isDark ? 'bg-[#041226]' : 'bg-white'
-                }`}
-              >
-                {/* Hero Feature Image */}
-                <div className="relative h-96 overflow-hidden">
-                  <img
-                    src="/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp"
-                    alt="Passport Nana Happy Children and IncrediBeingz Flying High"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-t ${
-                      isDark
-                        ? 'from-[#041226] via-[#041226]/40 to-transparent'
-                        : 'from-[#04142b]/90 via-[#04142b]/30 to-transparent'
-                    }`}
-                  />
+                <div
+                  className={`relative rounded-3xl overflow-hidden border-2 border-[#d4af37]/60 shadow-2xl ${
+                    isDark ? 'bg-[#041226]' : 'bg-white'
+                  }`}
+                >
+                  {/* Hero Feature Image */}
+                  <div className="relative h-96 overflow-hidden">
+                    <img
+                      src={heroImageUrl}
+                      alt="Passport Nana Happy Children and IncrediBeingz Flying High"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-t ${
+                        isDark
+                          ? 'from-[#041226] via-[#041226]/40 to-transparent'
+                          : 'from-[#04142b]/90 via-[#04142b]/30 to-transparent'
+                      }`}
+                    />
 
-                  {/* Top VIP Badge */}
-                  <div className="absolute top-4 left-4 bg-gradient-to-r from-[#d4af37] to-[#aa7c11] text-[#041226] text-xs font-black px-3.5 py-1 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 fill-[#041226]" />
-                    <span>Luxury Care That Travels!</span>
-                  </div>
+                    {/* Top VIP Badge */}
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-[#d4af37] to-[#aa7c11] text-[#041226] text-xs font-black px-3.5 py-1 rounded-full shadow-lg uppercase tracking-wider flex items-center gap-1.5">
+                      <Star className="w-3.5 h-3.5 fill-[#041226]" />
+                      <span>Luxury Care That Travels!</span>
+                    </div>
 
-                  {/* Bottom Image Overlay Card */}
-                  <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-[#041226]/85 backdrop-blur-md border border-[#d4af37]/40 text-white text-left shadow-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-semibold text-[#f3d078] uppercase tracking-wider">
-                          Passport Nanny & Babysitting
-                        </p>
-                        <h4 className="text-base font-bold text-white">Ken'nyzhae Nathaniel</h4>
+                    {/* Bottom Image Overlay Card */}
+                    <div className="absolute bottom-4 left-4 right-4 p-4 rounded-2xl bg-[#041226]/85 backdrop-blur-md border border-[#d4af37]/40 text-white text-left shadow-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-semibold text-[#f3d078] uppercase tracking-wider">
+                            Passport Nanny & Babysitting
+                          </p>
+                          <h4 className="text-base font-bold text-white">Ken'nyzhae Nathaniel</h4>
+                        </div>
+                        <button
+                          onClick={() => onOpenBooking('meet-n-greet')}
+                          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-[#041226] text-xs font-bold hover:brightness-110 transition-all"
+                        >
+                          Free Meet & Greet
+                        </button>
                       </div>
-                      <button
-                        onClick={() => onOpenBooking('meet-n-greet')}
-                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-[#041226] text-xs font-bold hover:brightness-110 transition-all"
-                      >
-                        Free Meet & Greet
-                      </button>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

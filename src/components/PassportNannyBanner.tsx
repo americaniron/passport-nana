@@ -2,6 +2,7 @@ import React from 'react';
 import { Plane, Compass, Shield, Luggage, Globe, Heart } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
 
 interface PassportNannyBannerProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -11,6 +12,11 @@ export const PassportNannyBanner: React.FC<PassportNannyBannerProps> = ({
   onOpenBooking,
 }) => {
   const { isDark } = useTheme();
+  const { getSiteImage } = useBusiness();
+  const bannerImageUrl = getSiteImage(
+    'site_passport_banner',
+    '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp'
+  );
 
   return (
     <section id="passport-nanny" className="py-20 relative overflow-hidden transition-colors duration-300">
@@ -40,24 +46,26 @@ export const PassportNannyBanner: React.FC<PassportNannyBannerProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             {/* Visual Gold Crest Artwork */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative group max-w-sm rounded-2xl overflow-hidden border-2 border-[#d4af37]/70 shadow-2xl shadow-amber-500/20">
-                <img
-                  src="/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp"
-                  alt="Passport Nanny VIP Luxury Travel Childcare"
-                  className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/90 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 text-center">
-                  <span className="text-xs font-bold text-[#f3d078] uppercase tracking-widest bg-[#041226]/90 px-3.5 py-1.5 rounded-full border border-[#d4af37]/50 shadow-md">
-                    Domestic & International Travel Care
-                  </span>
+            {bannerImageUrl && (
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="relative group max-w-sm rounded-2xl overflow-hidden border-2 border-[#d4af37]/70 shadow-2xl shadow-amber-500/20">
+                  <img
+                    src={bannerImageUrl}
+                    alt="Passport Nanny VIP Luxury Travel Childcare"
+                    className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/90 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <span className="text-xs font-bold text-[#f3d078] uppercase tracking-widest bg-[#041226]/90 px-3.5 py-1.5 rounded-full border border-[#d4af37]/50 shadow-md">
+                      Domestic & International Travel Care
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Content & Details */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+            <div className={`${bannerImageUrl ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6 text-left`}>
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#dfb75c] dark:text-[#f3d078] text-xs font-bold uppercase tracking-wider">
                   <Plane className="w-3.5 h-3.5" /> High-End Travel Childcare

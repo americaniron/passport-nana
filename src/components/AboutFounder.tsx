@@ -2,6 +2,7 @@ import React from 'react';
 import { Heart, ShieldCheck, Award, Star, Phone } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
 
 interface AboutFounderProps {
   onOpenBooking: () => void;
@@ -9,6 +10,11 @@ interface AboutFounderProps {
 
 export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => {
   const { isDark } = useTheme();
+  const { getSiteImage } = useBusiness();
+  const founderPortraitUrl = getSiteImage(
+    'site_founder_portrait',
+    '/assets/aistudio/LYZRLDMS4X5O44JOOXY3YY7K_5185ff1e.webp'
+  );
 
   return (
     <section id="about" className="py-20 relative overflow-hidden transition-colors duration-300">
@@ -22,38 +28,40 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Art & Portrait */}
-          <div className="lg:col-span-5 relative flex justify-center">
-            <div
-              className={`relative max-w-sm rounded-3xl overflow-hidden border-2 shadow-2xl transition-all ${
-                isDark
-                  ? 'border-[#d4af37]/60 bg-[#041226] shadow-black/50'
-                  : 'border-[#d4af37]/50 bg-white shadow-xl shadow-amber-900/5'
-              }`}
-            >
-              <img
-                src="/assets/aistudio/LYZRLDMS4X5O44JOOXY3YY7K_5185ff1e.webp"
-                alt="Ken'nyzhae Nathaniel with Passport Nana Little Ones"
-                className="w-full h-auto object-cover"
-              />
+          {founderPortraitUrl && (
+            <div className="lg:col-span-5 relative flex justify-center">
               <div
-                className={`absolute inset-0 bg-gradient-to-t ${
+                className={`relative max-w-sm rounded-3xl overflow-hidden border-2 shadow-2xl transition-all ${
                   isDark
-                    ? 'from-[#041226] via-transparent to-transparent opacity-90'
-                    : 'from-[#04142b]/90 via-transparent to-transparent'
+                    ? 'border-[#d4af37]/60 bg-[#041226] shadow-black/50'
+                    : 'border-[#d4af37]/50 bg-white shadow-xl shadow-amber-900/5'
                 }`}
-              />
-              <div className="absolute bottom-4 left-4 right-4 text-left">
-                <div className="inline-block bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-[#041226] text-[11px] font-bold px-3 py-1 rounded-full shadow-md mb-1">
-                  Founder & Care Director
+              >
+                <img
+                  src={founderPortraitUrl}
+                  alt="Ken'nyzhae Nathaniel with Passport Nana Little Ones"
+                  className="w-full h-auto object-cover"
+                />
+                <div
+                  className={`absolute inset-0 bg-gradient-to-t ${
+                    isDark
+                      ? 'from-[#041226] via-transparent to-transparent opacity-90'
+                      : 'from-[#04142b]/90 via-transparent to-transparent'
+                  }`}
+                />
+                <div className="absolute bottom-4 left-4 right-4 text-left">
+                  <div className="inline-block bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-[#041226] text-[11px] font-bold px-3 py-1 rounded-full shadow-md mb-1">
+                    Founder & Care Director
+                  </div>
+                  <h3 className="text-xl font-black text-white font-display">Ken'nyzhae Nathaniel</h3>
+                  <p className="text-xs text-[#f3d078]">"Your Favorite Nanny" • Master Loctician</p>
                 </div>
-                <h3 className="text-xl font-black text-white font-display">Ken'nyzhae Nathaniel</h3>
-                <p className="text-xs text-[#f3d078]">"Your Favorite Nanny" • Master Loctician</p>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Right Founder Story & Guarantees */}
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <div className={`${founderPortraitUrl ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-6 text-left`}>
             <div className="space-y-2">
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${

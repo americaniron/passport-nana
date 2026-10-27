@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
 
 interface LocsAndBraidsSectionProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -20,6 +21,15 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
   onOpenHairAdvisor,
 }) => {
   const { isDark } = useTheme();
+  const { getSiteImage } = useBusiness();
+  const locsImage1 = getSiteImage(
+    'site_locs_showcase_1',
+    '/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp'
+  );
+  const locsImage2 = getSiteImage(
+    'site_locs_showcase_2',
+    '/assets/aistudio/PSMWGZA2JPS7CFRDUK5AHEIW_0a7cd65a.webp'
+  );
 
   const steps = [
     {
@@ -83,40 +93,46 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
 
         {/* Real Client Showcase & Photo Gallery */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16">
-          <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-            <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
-              <img
-                src="/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp"
-                alt="Client Locs Parting & Clean Grid Work"
-                className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
-              <div className="absolute bottom-3 left-3 right-3 text-left">
-                <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
-                  Precision Parting Grid
-                </span>
-                <p className="text-xs text-white font-semibold mt-1">Immaculate scalp lines & palm retwist</p>
-              </div>
-            </div>
+          {(locsImage1 || locsImage2) && (
+            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {locsImage1 && (
+                <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
+                  <img
+                    src={locsImage1}
+                    alt="Client Locs Parting & Clean Grid Work"
+                    className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
+                  <div className="absolute bottom-3 left-3 right-3 text-left">
+                    <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
+                      Precision Parting Grid
+                    </span>
+                    <p className="text-xs text-white font-semibold mt-1">Immaculate scalp lines & palm retwist</p>
+                  </div>
+                </div>
+              )}
 
-            <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
-              <img
-                src="/assets/aistudio/PSMWGZA2JPS7CFRDUK5AHEIW_0a7cd65a.webp"
-                alt="Close-up of Locs Retwist & Healthy Scalp"
-                className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
-              <div className="absolute bottom-3 left-3 right-3 text-left">
-                <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
-                  Healthy Root Density
-                </span>
-                <p className="text-xs text-white font-semibold mt-1">Hydrated scalp & zero-tension technique</p>
-              </div>
+              {locsImage2 && (
+                <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
+                  <img
+                    src={locsImage2}
+                    alt="Close-up of Locs Retwist & Healthy Scalp"
+                    className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
+                  <div className="absolute bottom-3 left-3 right-3 text-left">
+                    <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
+                      Healthy Root Density
+                    </span>
+                    <p className="text-xs text-white font-semibold mt-1">Hydrated scalp & zero-tension technique</p>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          )}
 
           {/* Right description & Service packages */}
-          <div className="lg:col-span-6 space-y-6 text-left">
+          <div className={`${locsImage1 || locsImage2 ? 'lg:col-span-6' : 'lg:col-span-12'} space-y-6 text-left`}>
             <div className="space-y-3">
               <h3
                 className={`text-2xl sm:text-3xl font-black font-display ${

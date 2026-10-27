@@ -14,6 +14,7 @@ import {
 import { formatCurrency } from '../utils/pricing.ts';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
+import { useBusiness } from '../context/BusinessContext.tsx';
 
 interface ServicesSectionProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -25,6 +26,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
   onOpenCalculator,
 }) => {
   const { isDark } = useTheme();
+  const { getSiteImage, mediaGallery } = useBusiness();
   const [activeCategory, setActiveCategory] = useState<ServiceCategory>('all');
   const [selectedServiceForModal, setSelectedServiceForModal] =
     useState<ServiceItem | null>(null);
@@ -33,6 +35,10 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
     activeCategory === 'all'
       ? SERVICES
       : SERVICES.filter((s) => s.category === activeCategory);
+
+  const customGalleryItems = mediaGallery.filter(
+    (m) => !m.id.startsWith('site_') && !m.id.startsWith('service_')
+  );
 
   return (
     <section id="services" className="py-20 relative transition-colors duration-300">
@@ -95,126 +101,187 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredServices.map((service) => (
-            <div
-              key={service.id}
-              className={`group rounded-3xl border transition-all duration-300 overflow-hidden flex flex-col shadow-xl hover:-translate-y-1.5 ${
-                isDark
-                  ? 'bg-[#061833]/90 border-[#d4af37]/35 hover:border-[#dfb75c] hover:shadow-amber-500/15'
-                  : 'bg-white/95 border-[#d4af37]/40 hover:border-[#c59b27] hover:shadow-amber-500/20'
-              }`}
-            >
-              {/* Service Card Image */}
-              <div className="relative h-56 overflow-hidden bg-[#041226]">
-                <img
-                  src={service.image}
-                  alt={service.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div
-                  className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-85 ${
-                    isDark ? 'from-[#061833]' : 'from-[#04142b]/90'
-                  }`}
-                />
+          {filteredServices.map((service) => {
+            const serviceImageUrl = getSiteImage(`service_${service.id}`, service.image);
+            return (
+              <div
+                key={service.id}
+                className={`group rounded-3xl border transition-all duration-300 overflow-hidden flex flex-col shadow-xl hover:-translate-y-1.5 ${
+                  isDark
+                    ? 'bg-[#061833]/90 border-[#d4af37]/35 hover:border-[#dfb75c] hover:shadow-amber-500/15'
+                    : 'bg-white/95 border-[#d4af37]/40 hover:border-[#c59b27] hover:shadow-amber-500/20'
+                }`}
+              >
+                {/* Service Card Image */}
+                {serviceImageUrl && (
+                  <div className="relative h-56 overflow-hidden bg-[#041226]">
+                    <img
+                      src={serviceImageUrl}
+                      alt={service.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-t via-transparent to-transparent opacity-85 ${
+                        isDark ? 'from-[#061833]' : 'from-[#04142b]/90'
+                      }`}
+                    />
 
-                {/* Badge if available */}
-                {service.badge && (
-                  <div className="absolute top-3 left-3 bg-[#041226]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#d4af37]/50 text-[11px] font-bold text-[#f3d078]">
-                    {service.badge}
+                    {/* Badge if available */}
+                    {service.badge && (
+                      <div className="absolute top-3 left-3 bg-[#041226]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#d4af37]/50 text-[11px] font-bold text-[#f3d078]">
+                        {service.badge}
+                      </div>
+                    )}
+
+                    {/* Duration indicator */}
+                    <div className="absolute bottom-3 right-3 bg-[#041226]/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#d4af37]/30 text-[11px] font-medium text-slate-200 flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-[#dfb75c]" />
+                      <span>{service.durationLabel}</span>
+                    </div>
                   </div>
                 )}
 
-                {/* Duration indicator */}
-                <div className="absolute bottom-3 right-3 bg-[#041226]/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#d4af37]/30 text-[11px] font-medium text-slate-200 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-[#dfb75c]" />
-                  <span>{service.durationLabel}</span>
-                </div>
-              </div>
-
-              {/* Service Card Body */}
-              <div className="p-6 flex-1 flex flex-col justify-between space-y-4 text-left">
-                <div className="space-y-2">
-                  <h3
-                    className={`text-xl font-bold transition-colors ${
-                      isDark ? 'text-white group-hover:text-[#f3d078]' : 'text-[#04142b] group-hover:text-[#b8860b]'
-                    }`}
-                  >
-                    {service.title}
-                  </h3>
-                  <p className={`text-xs font-semibold ${isDark ? 'text-[#dfb75c]' : 'text-[#b8860b]'}`}>
-                    {service.subtitle}
-                  </p>
-                  <p
-                    className={`text-sm line-clamp-3 leading-relaxed ${
-                      isDark ? 'text-slate-300' : 'text-[#475569]'
-                    }`}
-                  >
-                    {service.shortDesc}
-                  </p>
-                </div>
-
-                {/* Key inclusions checklist */}
-                <div
-                  className={`space-y-1.5 pt-2 border-t text-xs ${
-                    isDark
-                      ? 'border-[#d4af37]/20 text-slate-300'
-                      : 'border-[#d4af37]/20 text-[#334155]'
-                  }`}
-                >
-                  {service.inclusions.slice(0, 3).map((item, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#dfb75c] shrink-0 mt-0.5" />
-                      <span className="line-clamp-1">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Pricing & Booking Actions */}
-                <div
-                  className={`pt-4 border-t flex items-center justify-between gap-3 ${
-                    isDark ? 'border-[#d4af37]/20' : 'border-[#d4af37]/20'
-                  }`}
-                >
-                  <div>
-                    <div className="text-[11px] uppercase font-semibold text-slate-400">Rate</div>
-                    <div className={`text-lg font-black ${isDark ? 'text-[#f3d078]' : 'text-[#04142b]'}`}>
-                      {service.priceType === 'free'
-                        ? 'Free ($0.00)'
-                        : service.priceType === 'deposit'
-                        ? `${formatCurrency(service.basePrice)} Deposit`
-                        : service.priceType === 'hourly'
-                        ? `${formatCurrency(service.basePrice)}/hr`
-                        : `From ${formatCurrency(service.basePrice)}`}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedServiceForModal(service)}
-                      className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
-                        isDark
-                          ? 'bg-[#071c38] text-slate-300 hover:text-white border-[#d4af37]/30 hover:border-[#d4af37]'
-                          : 'bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40 hover:border-[#b8860b]'
+                {/* Service Card Body */}
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4 text-left">
+                  <div className="space-y-2">
+                    <h3
+                      className={`text-xl font-bold transition-colors ${
+                        isDark ? 'text-white group-hover:text-[#f3d078]' : 'text-[#04142b] group-hover:text-[#b8860b]'
                       }`}
-                      title="View Details & Requirements"
-                      aria-label="View Details"
                     >
-                      <Info className="w-4 h-4 text-[#dfb75c]" />
-                    </button>
+                      {service.title}
+                    </h3>
+                    <p className={`text-xs font-semibold ${isDark ? 'text-[#dfb75c]' : 'text-[#b8860b]'}`}>
+                      {service.subtitle}
+                    </p>
+                    <p
+                      className={`text-sm line-clamp-3 leading-relaxed ${
+                        isDark ? 'text-slate-300' : 'text-[#475569]'
+                      }`}
+                    >
+                      {service.shortDesc}
+                    </p>
+                  </div>
 
-                    <button
-                      onClick={() => onOpenBooking(service.id)}
-                      className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] text-xs font-bold shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Book Nana Now</span>
-                    </button>
+                  {/* Key inclusions checklist */}
+                  <div
+                    className={`space-y-1.5 pt-2 border-t text-xs ${
+                      isDark
+                        ? 'border-[#d4af37]/20 text-slate-300'
+                        : 'border-[#d4af37]/20 text-[#334155]'
+                    }`}
+                  >
+                    {service.inclusions.slice(0, 3).map((item, idx) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <Check className="w-3.5 h-3.5 text-[#dfb75c] shrink-0 mt-0.5" />
+                        <span className="line-clamp-1">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pricing & Booking Actions */}
+                  <div
+                    className={`pt-4 border-t flex items-center justify-between gap-3 ${
+                      isDark ? 'border-[#d4af37]/20' : 'border-[#d4af37]/20'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-[11px] uppercase font-semibold text-slate-400">Rate</div>
+                      <div className={`text-lg font-black ${isDark ? 'text-[#f3d078]' : 'text-[#04142b]'}`}>
+                        {service.priceType === 'free'
+                          ? 'Free ($0.00)'
+                          : service.priceType === 'deposit'
+                          ? `${formatCurrency(service.basePrice)} Deposit`
+                          : service.priceType === 'hourly'
+                          ? `${formatCurrency(service.basePrice)}/hr`
+                          : `From ${formatCurrency(service.basePrice)}`}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedServiceForModal(service)}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          isDark
+                            ? 'bg-[#071c38] text-slate-300 hover:text-white border-[#d4af37]/30 hover:border-[#d4af37]'
+                            : 'bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40 hover:border-[#b8860b]'
+                        }`}
+                        title="View Details & Requirements"
+                        aria-label="View Details"
+                      >
+                        <Info className="w-4 h-4 text-[#dfb75c]" />
+                      </button>
+
+                      <button
+                        onClick={() => onOpenBooking(service.id)}
+                        className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] text-xs font-bold shadow-md shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer whitespace-nowrap"
+                      >
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Book Nana Now</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
+        {/* Custom Uploaded Moments & Photo Gallery Showcase */}
+        {customGalleryItems.length > 0 && (
+          <div className="mt-16 space-y-6">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <div
+                className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${
+                  isDark
+                    ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                    : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
+                }`}
+              >
+                <Star className="w-3.5 h-3.5 text-[#d4af37]" /> Live Passport Nana Gallery
+              </div>
+              <h3
+                className={`text-2xl sm:text-3xl font-black font-display ${
+                  isDark ? 'text-white' : 'text-[#04142b]'
+                }`}
+              >
+                Featured Moments & Client Highlights
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {customGalleryItems.map((item) => (
+                <div
+                  key={item.id}
+                  className={`rounded-3xl border overflow-hidden shadow-xl group ${
+                    isDark ? 'bg-[#061833]/90 border-[#d4af37]/35' : 'bg-white border-[#d4af37]/40'
+                  }`}
+                >
+                  <div className="h-60 overflow-hidden relative bg-[#041226]">
+                    <img
+                      src={item.url}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#041226]/85 border border-[#d4af37]/40 text-[10px] font-bold uppercase text-[#f3d078]">
+                      {item.category.replace('_', ' ')}
+                    </div>
+                  </div>
+                  <div className="p-4 text-left">
+                    <h4 className={`font-bold text-base ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
+                      {item.title}
+                    </h4>
+                    {item.caption && (
+                      <p className={`text-xs mt-1 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {item.caption}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Bottom Quick Calculator Banner */}
         <div

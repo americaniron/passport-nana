@@ -62,7 +62,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     deletePromotion,
     mediaGallery,
     addMediaItem,
+    updateMediaItem,
     deleteMediaItem,
+    restoreDefaultMedia,
     pricingRates,
     updatePricingRates,
     isAdminAuthenticated,
@@ -132,6 +134,18 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     'childcare' | 'passport_travel' | 'hair_locs' | 'adventures' | 'branding'
   >('childcare');
   const [newMediaCaption, setNewMediaCaption] = useState('');
+
+  // Edit / Replace Existing Media state
+  const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+  const [editMediaTitle, setEditMediaTitle] = useState('');
+  const [editMediaUrl, setEditMediaUrl] = useState('');
+  const [editMediaCategory, setEditMediaCategory] = useState<
+    'childcare' | 'passport_travel' | 'hair_locs' | 'adventures' | 'branding'
+  >('childcare');
+  const [editMediaCaption, setEditMediaCaption] = useState('');
+  const [mediaFilter, setMediaFilter] = useState<'all' | 'site_slots' | 'service_cards' | 'custom'>('all');
+  const [showAddMediaForm, setShowAddMediaForm] = useState(false);
+
   const [saveSuccessNotice, setSaveSuccessNotice] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -328,16 +342,70 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     showNotice('New promotion code published!');
   };
 
-  const handleUploadImageFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const compressImageToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result;
+        if (typeof result !== 'string') {
+          reject(new Error('Failed to read file'));
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          const maxDim = 1200;
+          let width = img.width;
+          let height = img.height;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(result);
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(result);
+        img.src = result;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleUploadImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setNewMediaUrl(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedUrl = await compressImageToDataUrl(file);
+        setNewMediaUrl(compressedUrl);
+      } catch {
+        // Ignore read error
+      }
+    }
+  };
+
+  const handleUploadReplaceImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const compressedUrl = await compressImageToDataUrl(file);
+        setEditMediaUrl(compressedUrl);
+      } catch {
+        // Ignore read error
+      }
     }
   };
 
@@ -355,7 +423,37 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setNewMediaTitle('');
     setNewMediaUrl('');
     setNewMediaCaption('');
-    showNotice('New media item uploaded to Cloud Gallery!');
+    setShowAddMediaForm(false);
+    showNotice('New photo added to Gallery & live website!');
+  };
+
+  const handleStartEditMedia = (item: {
+    id: string;
+    title: string;
+    url: string;
+    category: 'childcare' | 'passport_travel' | 'hair_locs' | 'adventures' | 'branding';
+    caption?: string;
+  }) => {
+    setEditingMediaId(item.id);
+    setEditMediaTitle(item.title);
+    setEditMediaUrl(item.url);
+    setEditMediaCategory(item.category);
+    setEditMediaCaption(item.caption || '');
+  };
+
+  const handleSaveEditedMedia = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMediaId || !editMediaUrl.trim()) return;
+
+    await updateMediaItem(editingMediaId, {
+      title: editMediaTitle.trim() || 'Passport Nana Image',
+      url: editMediaUrl.trim(),
+      category: editMediaCategory,
+      caption: editMediaCaption.trim(),
+    });
+
+    setEditingMediaId(null);
+    showNotice('Image replaced & updated across the live website!');
   };
 
   const handleSetCalendarDate = async (e: React.FormEvent) => {
@@ -1466,153 +1564,428 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
               {/* TAB 6: MEDIA GALLERY UPLOADER */}
               {activeTab === 'media' && (
                 <div className="space-y-6">
-                  <div>
-                    <h4 className="font-serif font-black text-lg text-[#d4af37]">
-                      Media & Photo Gallery Manager
-                    </h4>
-                    <p className="text-xs opacity-75">
-                      Upload or link new photos to show on the website cards, stories, and service gallery.
-                    </p>
+                  {/* Top Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h4 className="font-serif font-black text-lg text-[#d4af37]">
+                        Website Photos & Media Gallery Manager
+                      </h4>
+                      <p className="text-xs opacity-75">
+                        Add new photos, replace any existing website banner or service card photo, or delete images in real time.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingMediaId(null);
+                          setShowAddMediaForm((prev) => !prev);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#aa8214] text-[#041226] font-bold text-xs flex items-center gap-1.5 shadow hover:scale-105 transition-all cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>{showAddMediaForm ? 'Hide Add Photo Form' : 'Add New Photo'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await restoreDefaultMedia();
+                          setEditingMediaId(null);
+                          showNotice('All default website images have been restored!');
+                        }}
+                        className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
+                          isDark
+                            ? 'border-[#d4af37]/30 text-slate-200 hover:bg-white/5'
+                            : 'border-slate-300 text-slate-700 hover:bg-slate-100'
+                        }`}
+                        title="Restore any deleted or replaced default images back to factory original"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-[#d4af37]" />
+                        <span>Restore Defaults</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Add Media Form */}
-                  <form
-                    onSubmit={handleCreateMedia}
-                    className={`p-4 rounded-2xl border ${
-                      isDark ? 'bg-[#061833] border-white/10' : 'bg-white border-slate-200'
-                    }`}
-                  >
-                    <h5 className="font-bold text-sm text-[#d4af37] mb-3">Add New Photo / Media</h5>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-3">
-                      <div>
-                        <label className="block font-semibold mb-1">Title:</label>
-                        <input
-                          type="text"
-                          value={newMediaTitle}
-                          onChange={(e) => setNewMediaTitle(e.target.value)}
-                          placeholder="e.g. Safe Flight Accompaniment"
-                          className={`w-full px-3 py-2 rounded-xl border ${
-                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
-                          }`}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold mb-1">Category:</label>
-                        <select
-                          value={newMediaCategory}
-                          onChange={(e) =>
-                            setNewMediaCategory(
-                              e.target.value as 'childcare' | 'passport_travel' | 'hair_locs' | 'adventures' | 'branding'
-                            )
-                          }
-                          className={`w-full px-3 py-2 rounded-xl border ${
-                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
-                          }`}
-                        >
-                          <option value="childcare">Childcare & Nanny</option>
-                          <option value="passport_travel">Passport Travel Nanny</option>
-                          <option value="hair_locs">Locs & Braids</option>
-                          <option value="adventures">Adventure Days</option>
-                          <option value="branding">Branding</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold mb-1">Upload Photo from Device:</label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleUploadImageFile}
-                          className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#d4af37] file:text-[#041226] hover:file:bg-[#aa8214] cursor-pointer"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-2">
-                        <label className="block font-semibold mb-1">Or Image URL:</label>
-                        <input
-                          type="text"
-                          value={newMediaUrl}
-                          onChange={(e) => setNewMediaUrl(e.target.value)}
-                          placeholder="https://... or /assets/..."
-                          className={`w-full px-3 py-2 rounded-xl border ${
-                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
-                          }`}
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-semibold mb-1">Caption:</label>
-                        <input
-                          type="text"
-                          value={newMediaCaption}
-                          onChange={(e) => setNewMediaCaption(e.target.value)}
-                          placeholder="Short story or context..."
-                          className={`w-full px-3 py-2 rounded-xl border ${
-                            isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
-                          }`}
-                        />
-                      </div>
-                    </div>
-
-                    {newMediaUrl && (
-                      <div className="mb-3">
-                        <span className="text-[10px] opacity-70 block mb-1">Preview:</span>
-                        <img
-                          src={newMediaUrl}
-                          alt="Upload preview"
-                          className="h-24 w-36 object-cover rounded-xl border border-[#d4af37]/40 shadow-sm"
-                        />
-                      </div>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={!newMediaUrl}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#aa8214] text-[#041226] font-bold text-xs flex items-center gap-1.5 hover:scale-105 transition-all disabled:opacity-40"
+                  {/* REPLACE / EDIT EXISTING IMAGE MODAL/PANEL */}
+                  {editingMediaId && (
+                    <form
+                      onSubmit={handleSaveEditedMedia}
+                      className={`p-5 rounded-2xl border-2 border-[#d4af37] shadow-2xl space-y-4 animate-in fade-in ${
+                        isDark ? 'bg-[#071d3a]' : 'bg-amber-50/90'
+                      }`}
                     >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Add to Gallery</span>
-                    </button>
-                  </form>
-
-                  {/* Gallery Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {mediaGallery.map((m) => (
-                      <div
-                        key={m.id}
-                        className={`rounded-2xl border overflow-hidden group relative flex flex-col ${
-                          isDark ? 'bg-[#061833] border-white/10' : 'bg-white border-slate-200'
-                        }`}
-                      >
-                        <div className="h-32 w-full overflow-hidden relative">
-                          <img
-                            src={m.url}
-                            alt={m.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <button
-                            onClick={() => {
-                              deleteMediaItem(m.id);
-                              showNotice('Media item removed');
-                            }}
-                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-rose-400 hover:bg-rose-600 hover:text-white transition-colors"
-                            title="Delete image"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                      <div className="flex items-center justify-between border-b border-[#d4af37]/30 pb-3">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw className="w-4 h-4 text-[#d4af37]" />
+                          <h5 className="font-bold text-sm text-[#d4af37]">
+                            Replace or Edit Image: <span className="text-white">{editMediaTitle}</span>
+                          </h5>
                         </div>
-                        <div className="p-2.5 text-xs flex-1 flex flex-col justify-between">
+                        <button
+                          type="button"
+                          onClick={() => setEditingMediaId(null)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-300 hover:bg-white/10"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-start text-xs">
+                        {/* Current / New Preview */}
+                        <div className="sm:col-span-4 flex flex-col items-center justify-center p-3 rounded-xl bg-black/30 border border-[#d4af37]/30">
+                          <span className="text-[10px] uppercase font-bold text-[#d4af37] mb-2">
+                            Live Replacement Preview
+                          </span>
+                          {editMediaUrl ? (
+                            <img
+                              src={editMediaUrl}
+                              alt="Replacement preview"
+                              className="w-full h-36 object-cover rounded-xl border border-[#d4af37]/50 shadow-md"
+                            />
+                          ) : (
+                            <div className="w-full h-36 flex items-center justify-center text-slate-400">
+                              No image selected
+                            </div>
+                          )}
+                          <span className="text-[10px] opacity-60 mt-1.5 font-mono">
+                            Slot ID: {editingMediaId}
+                          </span>
+                        </div>
+
+                        {/* Replacement Inputs */}
+                        <div className="sm:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-[#d4af37] mb-1">
+                              Option 1: Upload Replacement Photo from Your Device
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleUploadReplaceImageFile}
+                              className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-[#d4af37] file:text-[#041226] hover:file:bg-[#f3d078] cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block font-semibold mb-1">
+                              Option 2: Or Paste Replacement Image URL
+                            </label>
+                            <input
+                              type="text"
+                              value={editMediaUrl}
+                              onChange={(e) => setEditMediaUrl(e.target.value)}
+                              placeholder="https://... or /assets/..."
+                              className={`w-full px-3 py-2 rounded-xl border ${
+                                isDark ? 'bg-[#040f1f] border-white/20 text-white' : 'bg-white border-slate-300'
+                              }`}
+                            />
+                          </div>
+
                           <div>
-                            <span className="font-bold line-clamp-1">{m.title}</span>
-                            <span className="text-[10px] uppercase font-bold text-[#d4af37] block mt-0.5">
-                              {m.category.replace('_', ' ')}
-                            </span>
-                            {m.caption && <p className="text-[10px] opacity-70 line-clamp-2 mt-1">{m.caption}</p>}
+                            <label className="block font-semibold mb-1">Title / Label:</label>
+                            <input
+                              type="text"
+                              value={editMediaTitle}
+                              onChange={(e) => setEditMediaTitle(e.target.value)}
+                              className={`w-full px-3 py-2 rounded-xl border ${
+                                isDark ? 'bg-[#040f1f] border-white/20 text-white' : 'bg-white border-slate-300'
+                              }`}
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-semibold mb-1">Category:</label>
+                            <select
+                              value={editMediaCategory}
+                              onChange={(e) =>
+                                setEditMediaCategory(
+                                  e.target.value as
+                                    | 'childcare'
+                                    | 'passport_travel'
+                                    | 'hair_locs'
+                                    | 'adventures'
+                                    | 'branding'
+                                )
+                              }
+                              className={`w-full px-3 py-2 rounded-xl border ${
+                                isDark ? 'bg-[#040f1f] border-white/20 text-white' : 'bg-white border-slate-300'
+                              }`}
+                            >
+                              <option value="childcare">Childcare & Nanny</option>
+                              <option value="passport_travel">Passport Travel Nanny</option>
+                              <option value="hair_locs">Locs & Braids</option>
+                              <option value="adventures">Adventure Days</option>
+                              <option value="branding">Branding</option>
+                            </select>
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block font-semibold mb-1">Caption / Placement Description:</label>
+                            <input
+                              type="text"
+                              value={editMediaCaption}
+                              onChange={(e) => setEditMediaCaption(e.target.value)}
+                              className={`w-full px-3 py-2 rounded-xl border ${
+                                isDark ? 'bg-[#040f1f] border-white/20 text-white' : 'bg-white border-slate-300'
+                              }`}
+                            />
                           </div>
                         </div>
                       </div>
+
+                      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#d4af37]/20">
+                        <button
+                          type="button"
+                          onClick={() => setEditingMediaId(null)}
+                          className="px-4 py-2 rounded-xl border border-white/20 text-xs font-bold hover:bg-white/10 cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-xs flex items-center gap-1.5 shadow-lg hover:scale-105 transition-all cursor-pointer"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          <span>Save Replacement Image</span>
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  {/* ADD NEW MEDIA FORM (Collapsible or Open) */}
+                  {showAddMediaForm && (
+                    <form
+                      onSubmit={handleCreateMedia}
+                      className={`p-4 rounded-2xl border animate-in fade-in ${
+                        isDark ? 'bg-[#061833] border-[#d4af37]/40' : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h5 className="font-bold text-sm text-[#d4af37]">Add New Photo to Website Gallery</h5>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddMediaForm(false)}
+                          className="text-xs opacity-70 hover:opacity-100"
+                        >
+                          Close
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-3">
+                        <div>
+                          <label className="block font-semibold mb-1">Title:</label>
+                          <input
+                            type="text"
+                            value={newMediaTitle}
+                            onChange={(e) => setNewMediaTitle(e.target.value)}
+                            placeholder="e.g. Safe Flight Accompaniment"
+                            className={`w-full px-3 py-2 rounded-xl border ${
+                              isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                            }`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold mb-1">Category:</label>
+                          <select
+                            value={newMediaCategory}
+                            onChange={(e) =>
+                              setNewMediaCategory(
+                                e.target.value as
+                                  | 'childcare'
+                                  | 'passport_travel'
+                                  | 'hair_locs'
+                                  | 'adventures'
+                                  | 'branding'
+                              )
+                            }
+                            className={`w-full px-3 py-2 rounded-xl border ${
+                              isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                            }`}
+                          >
+                            <option value="childcare">Childcare & Nanny</option>
+                            <option value="passport_travel">Passport Travel Nanny</option>
+                            <option value="hair_locs">Locs & Braids</option>
+                            <option value="adventures">Adventure Days</option>
+                            <option value="branding">Branding</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold mb-1">Upload Photo from Device:</label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleUploadImageFile}
+                            className="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#d4af37] file:text-[#041226] hover:file:bg-[#aa8214] cursor-pointer"
+                          />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block font-semibold mb-1">Or Image URL:</label>
+                          <input
+                            type="text"
+                            value={newMediaUrl}
+                            onChange={(e) => setNewMediaUrl(e.target.value)}
+                            placeholder="https://... or /assets/..."
+                            className={`w-full px-3 py-2 rounded-xl border ${
+                              isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                            }`}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-semibold mb-1">Caption:</label>
+                          <input
+                            type="text"
+                            value={newMediaCaption}
+                            onChange={(e) => setNewMediaCaption(e.target.value)}
+                            placeholder="Short story or context..."
+                            className={`w-full px-3 py-2 rounded-xl border ${
+                              isDark ? 'bg-[#040f1f] border-white/15 text-white' : 'bg-white border-slate-300'
+                            }`}
+                          />
+                        </div>
+                      </div>
+
+                      {newMediaUrl && (
+                        <div className="mb-3">
+                          <span className="text-[10px] opacity-70 block mb-1">Preview:</span>
+                          <img
+                            src={newMediaUrl}
+                            alt="Upload preview"
+                            className="h-24 w-36 object-cover rounded-xl border border-[#d4af37]/40 shadow-sm"
+                          />
+                        </div>
+                      )}
+
+                      <button
+                        type="submit"
+                        disabled={!newMediaUrl}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d4af37] to-[#aa8214] text-[#041226] font-bold text-xs flex items-center gap-1.5 hover:scale-105 transition-all disabled:opacity-40 cursor-pointer"
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Publish New Photo</span>
+                      </button>
+                    </form>
+                  )}
+
+                  {/* Filter Tabs for Existing Website Images */}
+                  <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-3">
+                    {[
+                      { id: 'all', label: `All Active Images (${mediaGallery.length})` },
+                      {
+                        id: 'site_slots',
+                        label: `Section Banners & Portraits (${mediaGallery.filter((m) => m.id.startsWith('site_')).length})`,
+                      },
+                      {
+                        id: 'service_cards',
+                        label: `Service Card Images (${mediaGallery.filter((m) => m.id.startsWith('service_')).length})`,
+                      },
+                      {
+                        id: 'custom',
+                        label: `Custom Gallery Uploads (${mediaGallery.filter((m) => !m.id.startsWith('site_') && !m.id.startsWith('service_')).length})`,
+                      },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() =>
+                          setMediaFilter(tab.id as 'all' | 'site_slots' | 'service_cards' | 'custom')
+                        }
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                          mediaFilter === tab.id
+                            ? 'bg-[#d4af37] text-[#041226] shadow'
+                            : isDark
+                            ? 'bg-[#061833] text-slate-300 hover:bg-white/10 border border-white/10'
+                            : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
                     ))}
+                  </div>
+
+                  {/* Gallery Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {mediaGallery
+                      .filter((m) => {
+                        if (mediaFilter === 'site_slots') return m.id.startsWith('site_');
+                        if (mediaFilter === 'service_cards') return m.id.startsWith('service_');
+                        if (mediaFilter === 'custom')
+                          return !m.id.startsWith('site_') && !m.id.startsWith('service_');
+                        return true;
+                      })
+                      .map((m) => {
+                        const isBeingEdited = editingMediaId === m.id;
+                        const slotTypeLabel = m.id.startsWith('site_')
+                          ? 'Website Section Banner'
+                          : m.id.startsWith('service_')
+                          ? 'Service Card Photo'
+                          : 'Custom Gallery Photo';
+
+                        return (
+                          <div
+                            key={m.id}
+                            className={`rounded-2xl border overflow-hidden group relative flex flex-col transition-all ${
+                              isBeingEdited
+                                ? 'border-2 border-[#d4af37] ring-2 ring-[#d4af37]/40'
+                                : isDark
+                                ? 'bg-[#061833] border-white/10 hover:border-[#d4af37]/50'
+                                : 'bg-white border-slate-200 hover:border-[#d4af37]'
+                            }`}
+                          >
+                            <div className="h-44 w-full overflow-hidden relative bg-black/40">
+                              <img
+                                src={m.url}
+                                alt={m.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute top-2 left-2 px-2.5 py-0.5 rounded-full bg-[#041226]/85 backdrop-blur-md border border-[#d4af37]/40 text-[10px] font-bold text-[#f3d078]">
+                                {slotTypeLabel}
+                              </div>
+                            </div>
+
+                            <div className="p-3.5 text-xs flex-1 flex flex-col justify-between space-y-3">
+                              <div>
+                                <span className="font-bold text-sm line-clamp-1">{m.title}</span>
+                                <span className="text-[10px] uppercase font-bold text-[#d4af37] block mt-0.5">
+                                  {m.category.replace('_', ' ')}
+                                </span>
+                                {m.caption && (
+                                  <p className="text-[11px] opacity-75 line-clamp-2 mt-1">{m.caption}</p>
+                                )}
+                              </div>
+
+                              {/* Action Buttons: Replace / Edit & Delete */}
+                              <div className="pt-2 border-t border-white/10 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleStartEditMedia(m)}
+                                  className="flex-1 py-2 px-2.5 rounded-xl bg-[#d4af37]/20 hover:bg-[#d4af37] text-[#f3d078] hover:text-[#041226] border border-[#d4af37]/40 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                                  title="Replace this photo or edit its details"
+                                >
+                                  <FileEdit className="w-3.5 h-3.5" />
+                                  <span>Replace / Edit</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    await deleteMediaItem(m.id);
+                                    if (editingMediaId === m.id) setEditingMediaId(null);
+                                    showNotice(`Removed "${m.title}" from the website.`);
+                                  }}
+                                  className="py-2 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-600 text-rose-400 hover:text-white border border-rose-500/30 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer"
+                                  title="Delete / remove this image from the website"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                   </div>
                 </div>
               )}

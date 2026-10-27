@@ -124,10 +124,16 @@ interface BusinessContextType {
     promo?: PromotionItem;
   };
 
-  // Media Gallery
+  // Media Gallery & Website Image Slots
   mediaGallery: MediaItem[];
   addMediaItem: (item: Omit<MediaItem, 'id' | 'createdAt'>) => Promise<void>;
+  updateMediaItem: (
+    id: string,
+    updates: Partial<Omit<MediaItem, 'id' | 'createdAt'>>
+  ) => Promise<void>;
   deleteMediaItem: (id: string) => Promise<void>;
+  restoreDefaultMedia: () => Promise<void>;
+  getSiteImage: (id: string, fallbackUrl?: string) => string | null;
 
   // Pricing
   pricingRates: PricingRatesConfig;
@@ -183,6 +189,137 @@ const DEFAULT_PRICING_RATES: PricingRatesConfig = {
   standardMinHours: 4,
 };
 
+export const DEFAULT_SITE_MEDIA: MediaItem[] = [
+  {
+    id: 'site_hero_main',
+    title: 'Hero Banner Feature Photo',
+    url: '/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp',
+    category: 'branding',
+    caption: 'Homepage Hero right-side feature showcase card',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'site_passport_banner',
+    title: 'Passport Nanny Experience Feature Photo',
+    url: '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp',
+    category: 'passport_travel',
+    caption: 'Featured image in The Passport Nanny Experience section',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'site_locs_showcase_1',
+    title: 'Locs Showcase 1: Precision Parting Grid',
+    url: '/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp',
+    category: 'hair_locs',
+    caption: 'Immaculate scalp lines & palm retwist showcase photo (Left)',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'site_locs_showcase_2',
+    title: 'Locs Showcase 2: Healthy Root Density',
+    url: '/assets/aistudio/PSMWGZA2JPS7CFRDUK5AHEIW_0a7cd65a.webp',
+    category: 'hair_locs',
+    caption: 'Hydrated scalp & zero-tension technique showcase photo (Right)',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'site_founder_portrait',
+    title: "Founder Portrait: Ken'nyzhae Nathaniel",
+    url: '/assets/aistudio/LYZRLDMS4X5O44JOOXY3YY7K_5185ff1e.webp',
+    category: 'branding',
+    caption: 'Meet Your Family’s Favorite Partner in Care section portrait',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_nanny-services',
+    title: 'Service Card: Nanny Services',
+    url: '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp',
+    category: 'childcare',
+    caption: 'High-quality, attentive in-home or travel childcare card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_passport-travel-nanny',
+    title: 'Service Card: Passport Nanny (Travel Childcare)',
+    url: '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp',
+    category: 'passport_travel',
+    caption: 'Domestic & international flight accompaniment card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_on-call-babysitter',
+    title: 'Service Card: Babysitter & On-Call Sitter',
+    url: '/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp',
+    category: 'childcare',
+    caption: '24/7 Available on-call babysitter card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_school-pickup',
+    title: 'Service Card: Picking up Baby From School',
+    url: '/assets/aistudio/JXODWQQHOB27IQ4OJXJW3RF3_86de3a81.webp',
+    category: 'childcare',
+    caption: 'Safe school dismissal, snack & homework routine card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_adventure-day',
+    title: 'Service Card: Adventure Day Experience',
+    url: '/assets/aistudio/T3Y66BS3HKS4D42K6PD7LESR_901339d2.webp',
+    category: 'adventures',
+    caption: 'Tailored indoor & outdoor excursions card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_pet-nanny-24hr',
+    title: 'Service Card: 24-HR On-Call Pet Nanny',
+    url: '/assets/aistudio/Screenshot_2026-10-26_at_6.58.42_PM_0896ae9b.png',
+    category: 'adventures',
+    caption: 'Sunrise walks, beach adventures & overnight pet sitting card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_locks-wash-retwist-style',
+    title: 'Service Card: Locks: Wash, Retwist & Style',
+    url: '/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp',
+    category: 'hair_locs',
+    caption: 'Deep clean clarifying wash, scalp massage & palm rolling card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_freestyle-braids',
+    title: 'Service Card: Freestyle Braids (Kids & Adults)',
+    url: '/assets/aistudio/PSMWGZA2JPS7CFRDUK5AHEIW_0a7cd65a.webp',
+    category: 'hair_locs',
+    caption: 'Creative, pain-free protective braided styles card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_hair-consultation',
+    title: 'Service Card: Hair Consultation (Locs & Braids)',
+    url: '/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp',
+    category: 'hair_locs',
+    caption: 'Assess scalp condition, loc maturity & style planning card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_meet-n-greet',
+    title: 'Service Card: Meet-N-Greet (Sitter / Nanny)',
+    url: '/assets/aistudio/Q23I372NJNBIAIIBXHFFJO25_3eb64b95.webp',
+    category: 'childcare',
+    caption: 'Complimentary consultation to meet Nana card photo',
+    createdAt: '2026-10-26',
+  },
+  {
+    id: 'service_multiple-days-deposit',
+    title: 'Service Card: Multi-Day / Travel Booking Deposit',
+    url: '/assets/aistudio/T47GYQIQZI3O77PQ3A5YN3ML_e5f6454f.webp',
+    category: 'passport_travel',
+    caption: 'Lock in dates for weekly nanny contracts or vacation trips card photo',
+    createdAt: '2026-10-26',
+  },
+];
+
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -195,7 +332,23 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [pricingRates, setPricingRates] = useState<PricingRatesConfig>(DEFAULT_PRICING_RATES);
   const [calendarAvailability, setCalendarAvailability] = useState<Record<string, CalendarDayStatus>>({});
   const [promotions, setPromotions] = useState<PromotionItem[]>([]);
-  const [mediaGallery, setMediaGallery] = useState<MediaItem[]>([]);
+  const [firestoreMedia, setFirestoreMedia] = useState<Record<string, MediaItem>>({});
+  const [localMediaOverrides, setLocalMediaOverrides] = useState<Record<string, MediaItem>>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('pn_media_overrides_v1') : null;
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [deletedMediaIds, setDeletedMediaIds] = useState<string[]>(() => {
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem('pn_deleted_media_ids_v1') : null;
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
   const [careProfile, setCareProfile] = useState<CareProfile | null>(null);
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState<boolean>(false);
@@ -348,19 +501,19 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const unsub = onSnapshot(
       collection(db, 'mediaGallery'),
       (snap) => {
-        const list: MediaItem[] = [];
+        const map: Record<string, MediaItem> = {};
         snap.forEach((docSnap) => {
           const d = docSnap.data();
-          list.push({
+          map[docSnap.id] = {
             id: docSnap.id,
             title: d.title,
             url: d.url,
             category: d.category,
             caption: d.caption,
             createdAt: d.createdAt,
-          });
+          };
         });
-        setMediaGallery(list);
+        setFirestoreMedia(map);
       },
       (err) => {
         console.error('Error reading mediaGallery:', err);
@@ -368,6 +521,42 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
     return () => unsub();
   }, []);
+
+  // Compute merged mediaGallery (Built-in Site Images + Local Overrides + Firestore Media - Deleted IDs)
+  const mediaGallery: MediaItem[] = React.useMemo(() => {
+    const combinedMap = new Map<string, MediaItem>();
+    for (const item of DEFAULT_SITE_MEDIA) {
+      combinedMap.set(item.id, item);
+    }
+    for (const [id, item] of Object.entries(localMediaOverrides)) {
+      combinedMap.set(id, item);
+    }
+    for (const [id, item] of Object.entries(firestoreMedia)) {
+      combinedMap.set(id, item);
+    }
+
+    const result: MediaItem[] = [];
+    for (const [id, item] of combinedMap.entries()) {
+      if (deletedMediaIds.includes(id) || item.url === '__DELETED__') {
+        continue;
+      }
+      result.push(item);
+    }
+    return result;
+  }, [localMediaOverrides, firestoreMedia, deletedMediaIds]);
+
+  const getSiteImage = (id: string, fallbackUrl?: string): string | null => {
+    if (
+      deletedMediaIds.includes(id) ||
+      firestoreMedia[id]?.url === '__DELETED__' ||
+      localMediaOverrides[id]?.url === '__DELETED__'
+    ) {
+      return null;
+    }
+    const found = mediaGallery.find((m) => m.id === id);
+    if (found && found.url) return found.url;
+    return fallbackUrl || null;
+  };
 
   // 6. Listen to Authenticated Client's Care Profile (/careProfiles/{uid})
   useEffect(() => {
@@ -900,29 +1089,158 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     };
   };
 
-  // Media Gallery Writers
+  // Media Gallery Writers (Add, Replace/Update, Delete, Restore Defaults)
+  const saveLocalOverrides = (next: Record<string, MediaItem>) => {
+    setLocalMediaOverrides(next);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pn_media_overrides_v1', JSON.stringify(next));
+      }
+    } catch (e) {
+      console.warn('Could not persist media overrides to localStorage:', e);
+    }
+  };
+
+  const saveDeletedIds = (next: string[]) => {
+    setDeletedMediaIds(next);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pn_deleted_media_ids_v1', JSON.stringify(next));
+      }
+    } catch (e) {
+      console.warn('Could not persist deleted media IDs to localStorage:', e);
+    }
+  };
+
   const addMediaItem = async (item: Omit<MediaItem, 'id' | 'createdAt'>) => {
     const mediaId = `media_${Date.now()}`;
-    const path = `mediaGallery/${mediaId}`;
-    try {
-      await setDoc(doc(db, 'mediaGallery', mediaId), {
-        title: item.title.slice(0, 150),
-        url: item.url.slice(0, 800000),
-        category: item.category,
-        caption: (item.caption || '').slice(0, 400),
+    const createdAt = new Date().toISOString().split('T')[0];
+    const newItem: MediaItem = {
+      id: mediaId,
+      title: (item.title || 'Passport Nana Photo').slice(0, 150),
+      url: item.url.slice(0, 800000),
+      category: item.category,
+      caption: (item.caption || '').slice(0, 400),
+      createdAt,
+    };
+
+    // Update local state immediately
+    saveLocalOverrides({ ...localMediaOverrides, [mediaId]: newItem });
+    if (deletedMediaIds.includes(mediaId)) {
+      saveDeletedIds(deletedMediaIds.filter((d) => d !== mediaId));
+    }
+
+    // Sync to Firestore if signed in
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(db, 'mediaGallery', mediaId), {
+          title: newItem.title,
+          url: newItem.url,
+          category: newItem.category,
+          caption: newItem.caption || '',
+          createdAt: newItem.createdAt,
+        });
+      } catch (err) {
+        console.warn('Firestore media write skipped or failed (saved locally):', err);
+      }
+    }
+  };
+
+  const updateMediaItem = async (
+    id: string,
+    updates: Partial<Omit<MediaItem, 'id' | 'createdAt'>>
+  ) => {
+    const existing =
+      mediaGallery.find((m) => m.id === id) ||
+      DEFAULT_SITE_MEDIA.find((m) => m.id === id) || {
+        id,
+        title: 'Passport Nana Photo',
+        url: '',
+        category: 'childcare' as const,
+        caption: '',
         createdAt: new Date().toISOString().split('T')[0],
-      });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, path);
+      };
+
+    const updatedItem: MediaItem = {
+      ...existing,
+      title: (updates.title !== undefined ? updates.title : existing.title).slice(0, 150),
+      url: (updates.url !== undefined ? updates.url : existing.url).slice(0, 800000),
+      category: updates.category !== undefined ? updates.category : existing.category,
+      caption: (updates.caption !== undefined ? updates.caption : existing.caption || '').slice(0, 400),
+    };
+
+    // Update local overrides & un-mark deleted if applicable
+    saveLocalOverrides({ ...localMediaOverrides, [id]: updatedItem });
+    if (deletedMediaIds.includes(id)) {
+      saveDeletedIds(deletedMediaIds.filter((d) => d !== id));
+    }
+
+    // Sync to Firestore if signed in
+    if (auth.currentUser) {
+      try {
+        await setDoc(doc(db, 'mediaGallery', id), {
+          title: updatedItem.title,
+          url: updatedItem.url,
+          category: updatedItem.category,
+          caption: updatedItem.caption || '',
+          createdAt: updatedItem.createdAt,
+        });
+      } catch (err) {
+        console.warn('Firestore media update skipped or failed (saved locally):', err);
+      }
     }
   };
 
   const deleteMediaItem = async (id: string) => {
-    const path = `mediaGallery/${id}`;
-    try {
-      await deleteDoc(doc(db, 'mediaGallery', id));
-    } catch (err) {
-      handleFirestoreError(err, OperationType.DELETE, path);
+    // Mark as deleted locally
+    if (!deletedMediaIds.includes(id)) {
+      saveDeletedIds([...deletedMediaIds, id]);
+    }
+    const nextOverrides = { ...localMediaOverrides };
+    delete nextOverrides[id];
+    saveLocalOverrides(nextOverrides);
+
+    // Sync deletion to Firestore if signed in
+    if (auth.currentUser) {
+      const isBuiltInSlot = DEFAULT_SITE_MEDIA.some((m) => m.id === id);
+      try {
+        if (isBuiltInSlot) {
+          await setDoc(doc(db, 'mediaGallery', id), {
+            title: 'Removed Image Slot',
+            url: '__DELETED__',
+            category: 'branding',
+            caption: '',
+            createdAt: new Date().toISOString().split('T')[0],
+          });
+        } else {
+          await deleteDoc(doc(db, 'mediaGallery', id));
+        }
+      } catch (err) {
+        console.warn('Firestore media delete skipped or failed (saved locally):', err);
+      }
+    }
+  };
+
+  const restoreDefaultMedia = async () => {
+    saveDeletedIds([]);
+    const customOnly: Record<string, MediaItem> = {};
+    for (const [key, val] of Object.entries(localMediaOverrides)) {
+      if (!DEFAULT_SITE_MEDIA.some((m) => m.id === key)) {
+        customOnly[key] = val;
+      }
+    }
+    saveLocalOverrides(customOnly);
+
+    if (auth.currentUser) {
+      for (const builtIn of DEFAULT_SITE_MEDIA) {
+        if (firestoreMedia[builtIn.id]) {
+          try {
+            await deleteDoc(doc(db, 'mediaGallery', builtIn.id));
+          } catch {
+            // ignore
+          }
+        }
+      }
     }
   };
 
@@ -1051,7 +1369,10 @@ export const BusinessProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         applyPromoCode,
         mediaGallery,
         addMediaItem,
+        updateMediaItem,
         deleteMediaItem,
+        restoreDefaultMedia,
+        getSiteImage,
         pricingRates,
         updatePricingRates,
         isAdminAuthenticated,
