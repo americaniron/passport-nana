@@ -4,11 +4,10 @@ import {
   Sparkles,
   Droplets,
   Wind,
-  CheckCircle2,
   Calendar,
-  HelpCircle,
-  ShieldAlert,
 } from 'lucide-react';
+import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface LocsAndBraidsSectionProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -19,6 +18,8 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
   onOpenBooking,
   onOpenHairAdvisor,
 }) => {
+  const { isDark } = useTheme();
+
   const steps = [
     {
       num: '01',
@@ -47,17 +48,34 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
   ];
 
   return (
-    <section id="hair-locs" className="py-20 bg-[#0d0221] relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="hair-locs" className="py-20 relative transition-colors duration-300">
+      {/* Looping Section Background Video: Gentle hair care and crown styling */}
+      <SectionBackgroundVideo
+        videoUrl="/videos/hair-locs.mp4"
+        opacityDark="opacity-30"
+        opacityLight="opacity-20"
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pink-950/80 border border-pink-400/30 text-pink-300 text-xs font-semibold uppercase tracking-wider">
+          <div
+            className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
+              isDark
+                ? 'bg-pink-950/80 border-pink-400/30 text-pink-300'
+                : 'bg-pink-100 border-pink-300 text-pink-900'
+            }`}
+          >
             <Scissors className="w-3.5 h-3.5" /> Gentle Kids & Adult Loctician
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white font-display">
+          <h2
+            className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
+              isDark ? 'text-white' : 'text-slate-950'
+            }`}
+          >
             Crown Care: Locks, Retwists & Freestyle Braids
           </h2>
-          <p className="text-base sm:text-lg text-slate-300">
+          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-slate-700 font-medium'}>
             Precision root work, crisp parting grids, and nurturing scalp health. We believe in gentle hands, healthy follicles, and lasting style.
           </p>
         </div>
@@ -99,10 +117,18 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
           {/* Right description & Service packages */}
           <div className="lg:col-span-6 space-y-6 text-left">
             <div className="space-y-3">
-              <h3 className="text-2xl sm:text-3xl font-black text-white font-display">
+              <h3
+                className={`text-2xl sm:text-3xl font-black font-display ${
+                  isDark ? 'text-white' : 'text-slate-950'
+                }`}
+              >
                 The Signature 5-Step Loc Restoration
               </h3>
-              <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+              <p
+                className={`text-sm sm:text-base leading-relaxed ${
+                  isDark ? 'text-slate-300' : 'text-slate-700 font-medium'
+                }`}
+              >
                 Every loc session with Ken'nyzhae is an all-inclusive wellness ritual. Unlike rush salons, your hair receives meticulous cleansing, deep botanical scalp hydration, and gentle palm rolling so your retwist lasts longer without breakage.
               </p>
             </div>
@@ -112,38 +138,59 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
               {steps.map((st) => {
                 const Icon = st.icon;
                 return (
-                  <div key={st.num} className="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/20 space-y-1">
+                  <div
+                    key={st.num}
+                    className={`p-3.5 rounded-xl border space-y-1 ${
+                      isDark
+                        ? 'bg-purple-950/40 border-purple-500/20'
+                        : 'bg-white/80 border-purple-200 shadow-sm'
+                    }`}
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-cyan-400">{st.num}</span>
-                      <Icon className="w-3.5 h-3.5 text-pink-400" />
-                      <span className="text-xs font-bold text-white line-clamp-1">{st.title}</span>
+                      <span className="text-xs font-black text-cyan-600 dark:text-cyan-400">{st.num}</span>
+                      <Icon className="w-3.5 h-3.5 text-pink-500" />
+                      <span className={`text-xs font-bold line-clamp-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        {st.title}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-slate-300 leading-relaxed">{st.desc}</p>
+                    <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {st.desc}
+                    </p>
                   </div>
                 );
               })}
             </div>
 
             {/* Quick Pricing Summary & Consultation CTA */}
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950/80 to-indigo-950/80 border border-cyan-400/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg ${
+                isDark
+                  ? 'bg-gradient-to-r from-purple-950/80 to-indigo-950/80 border-cyan-400/30 text-white'
+                  : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 text-slate-900'
+              }`}
+            >
               <div>
-                <div className="text-xs text-slate-400">Wash, Retwist & Style</div>
-                <div className="text-xl font-black text-cyan-300">Starts at $50.00</div>
-                <div className="text-[11px] text-slate-400">Final price determined by loc length/condition</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Wash, Retwist & Style</div>
+                <div className="text-xl font-black text-cyan-600 dark:text-cyan-300">Starts at $50.00</div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">Final price determined by loc length/condition</div>
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={onOpenHairAdvisor}
-                  className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-purple-900/60 hover:bg-purple-800 text-cyan-300 text-xs font-bold border border-purple-500/40"
+                  className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                    isDark
+                      ? 'bg-purple-900/60 hover:bg-purple-800 text-cyan-300 border-purple-500/40'
+                      : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-sm'
+                  }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
                   <span>AI Loc Diagnostic</span>
                 </button>
 
                 <button
                   onClick={() => onOpenBooking('locks-wash-retwist-style')}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 text-xs font-bold shadow-md shadow-cyan-500/20"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 text-xs font-bold shadow-md shadow-cyan-500/20 cursor-pointer"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Book Locs ($50+)</span>
@@ -151,12 +198,15 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center gap-4 text-xs text-slate-400">
-              <span>Looking for Freestyle Braids? <strong className="text-white">$100 flat (6 hrs)</strong></span>
+            <div className={`flex items-center gap-4 text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              <span>
+                Looking for Freestyle Braids?{' '}
+                <strong className={isDark ? 'text-white' : 'text-slate-950'}>$100 flat (6 hrs)</strong>
+              </span>
               <span>•</span>
               <button
                 onClick={() => onOpenBooking('hair-consultation')}
-                className="text-cyan-300 hover:underline font-semibold"
+                className="text-cyan-600 dark:text-cyan-300 hover:underline font-semibold cursor-pointer"
               >
                 Book $25 Consultation
               </button>

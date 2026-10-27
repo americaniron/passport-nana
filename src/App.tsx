@@ -12,9 +12,11 @@ import { Footer } from './components/Footer.tsx';
 import { BookingModal } from './components/BookingModal.tsx';
 import { AIChatModal } from './components/AIChatModal.tsx';
 import { HairCareAdvisorModal } from './components/HairCareAdvisorModal.tsx';
+import { useTheme } from './context/ThemeContext.tsx';
 import { MessageSquare, Sparkles, Phone, Calendar } from 'lucide-react';
 
 export default function App() {
+  const { isDark } = useTheme();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [activeServiceId, setActiveServiceId] = useState<string | undefined>();
   const [activeHours, setActiveHours] = useState<number | undefined>();
@@ -47,7 +49,11 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b021a] text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
+    <div
+      className={`min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-300 ${
+        isDark ? 'bg-[#0b021a] text-slate-100' : 'bg-[#faf8fd] text-slate-900'
+      }`}
+    >
       {/* Navigation */}
       <Navbar
         onOpenBooking={handleOpenBooking}

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MessageSquare, Clock, MapPin, Heart, Sparkles, Send, CheckCircle2 } from 'lucide-react';
+import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface FooterProps {
   onOpenBooking: (serviceId?: string) => void;
@@ -7,6 +9,7 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenChat }) => {
+  const { isDark } = useTheme();
   const [emailInput, setEmailInput] = useState<string>('');
   const [subscribed, setSubscribed] = useState<boolean>(false);
 
@@ -20,7 +23,17 @@ export const Footer: React.FC<FooterProps> = ({ onOpenBooking, onOpenChat }) => 
   };
 
   return (
-    <footer className="bg-[#080114] text-white border-t border-purple-900/40 relative overflow-hidden">
+    <footer
+      className={`border-t relative overflow-hidden transition-colors duration-300 ${
+        isDark ? 'bg-[#080114] text-white border-purple-900/40' : 'bg-slate-900 text-white border-indigo-200'
+      }`}
+    >
+      {/* Looping Section Background Video: Gentle starlight & ambient night sky */}
+      <SectionBackgroundVideo
+        videoUrl="/videos/footer-stars.mp4"
+        opacityDark="opacity-25"
+        opacityLight="opacity-15"
+      />
       {/* Top Banner section matching original site */}
       <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-cyan-950 py-10 px-4 sm:px-6 lg:px-8 border-b border-purple-500/20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">

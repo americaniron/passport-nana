@@ -7,6 +7,7 @@ import {
   generateBookingReference,
   validateBookingForm,
 } from '../utils/pricing.ts';
+import { useTheme } from '../context/ThemeContext.tsx';
 import {
   X,
   Calendar,
@@ -38,6 +39,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   initialHours,
   initialChildrenCount,
 }) => {
+  const { isDark } = useTheme();
   const [serviceId, setServiceId] = useState<string>(initialServiceId || 'nanny-services');
   const [clientName, setClientName] = useState<string>('');
   const [clientPhone, setClientPhone] = useState<string>('');
@@ -153,10 +155,20 @@ END:VCALENDAR`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-3xl my-8 rounded-3xl bg-[#12042b] border border-cyan-400/40 p-6 sm:p-8 text-white shadow-2xl">
+      <div
+        className={`relative w-full max-w-3xl my-8 rounded-3xl p-6 sm:p-8 shadow-2xl transition-all border ${
+          isDark
+            ? 'bg-[#12042b] border-cyan-400/40 text-white'
+            : 'bg-white border-purple-200 text-slate-900 shadow-2xl shadow-purple-950/20'
+        }`}
+      >
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full bg-purple-950 text-slate-300 hover:text-white hover:bg-purple-900 border border-purple-500/30 transition-all"
+          className={`absolute top-5 right-5 p-2 rounded-full border transition-all ${
+            isDark
+              ? 'bg-purple-950 text-slate-300 hover:text-white hover:bg-purple-900 border-purple-500/30'
+              : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 border-slate-300'
+          }`}
           aria-label="Close booking modal"
         >
           <X className="w-5 h-5" />

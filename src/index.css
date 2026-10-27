@@ -3,8 +3,17 @@
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    color: #1e1035;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  html.dark body {
+    color: #f1f5f9;
     background-color: #0b021a;
+  }
+
+  html.light body {
+    color: #1e1035;
+    background-color: #faf8ff;
   }
 
   h1, h2, h3, .font-display {

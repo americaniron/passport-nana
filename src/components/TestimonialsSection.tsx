@@ -1,7 +1,11 @@
 import React from 'react';
 import { Star, Quote, Heart, CheckCircle2 } from 'lucide-react';
+import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 export const TestimonialsSection: React.FC = () => {
+  const { isDark } = useTheme();
+
   const reviews = [
     {
       name: 'Elena & Marcus R.',
@@ -42,16 +46,33 @@ export const TestimonialsSection: React.FC = () => {
   ];
 
   return (
-    <section className="py-20 bg-[#0d0221] relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 relative overflow-hidden transition-colors duration-300">
+      {/* Looping Section Background Video: 5-Star Reviews, Celebration Sparkles & Rising Stars */}
+      <SectionBackgroundVideo
+        videoUrl="/videos/testimonials.mp4"
+        opacityDark="opacity-30"
+        opacityLight="opacity-20"
+      />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-400/30 text-cyan-300 text-xs font-semibold uppercase tracking-wider">
+          <div
+            className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
+              isDark
+                ? 'bg-cyan-950/80 border-cyan-400/30 text-cyan-300'
+                : 'bg-purple-100 border-purple-300 text-purple-900'
+            }`}
+          >
             <Heart className="w-3.5 h-3.5 text-pink-400" /> Real Parent Experiences
           </div>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white font-display">
+          <h2
+            className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
+              isDark ? 'text-white' : 'text-slate-950'
+            }`}
+          >
             Loved By Families Across the Nation
           </h2>
-          <p className="text-base sm:text-lg text-slate-300">
+          <p className={`text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
             Hear why parents and guardians call Ken’nyzhae "Nana" and their family's indispensable secret weapon.
           </p>
         </div>
@@ -60,7 +81,11 @@ export const TestimonialsSection: React.FC = () => {
           {reviews.map((rev, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-3xl bg-[#14062f] border border-purple-500/30 hover:border-cyan-400/40 transition-all flex flex-col justify-between space-y-4 shadow-xl"
+              className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 shadow-xl ${
+                isDark
+                  ? 'bg-[#14062f]/85 border-purple-500/30 hover:border-cyan-400/40 text-slate-200'
+                  : 'bg-white/90 border-purple-200 hover:border-purple-400 text-slate-800 shadow-purple-100/70'
+              }`}
             >
               <div className="space-y-3 text-left">
                 <div className="flex items-center justify-between">
@@ -69,22 +94,42 @@ export const TestimonialsSection: React.FC = () => {
                       <Star key={i} className="w-4 h-4 fill-amber-400" />
                     ))}
                   </div>
-                  <Quote className="w-5 h-5 text-purple-400/40" />
+                  <Quote
+                    className={`w-5 h-5 ${
+                      isDark ? 'text-purple-400/40' : 'text-purple-300'
+                    }`}
+                  />
                 </div>
 
-                <p className="text-xs sm:text-sm text-slate-200 leading-relaxed italic">
+                <p
+                  className={`text-xs sm:text-sm leading-relaxed italic ${
+                    isDark ? 'text-slate-200' : 'text-slate-700'
+                  }`}
+                >
                   "{rev.comment}"
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-purple-500/20 text-left space-y-1">
-                <div className="text-sm font-bold text-white flex items-center gap-1.5">
+              <div
+                className={`pt-4 border-t text-left space-y-1 ${
+                  isDark ? 'border-purple-500/20' : 'border-purple-100'
+                }`}
+              >
+                <div
+                  className={`text-sm font-bold flex items-center gap-1.5 ${
+                    isDark ? 'text-white' : 'text-slate-950'
+                  }`}
+                >
                   <span>{rev.name}</span>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500" />
                 </div>
-                <div className="text-[11px] text-pink-300 font-semibold">{rev.role}</div>
-                <div className="text-[10px] text-slate-400">{rev.location}</div>
-                <div className="text-[10px] text-cyan-400 font-medium">{rev.service}</div>
+                <div className="text-[11px] text-pink-500 font-semibold">{rev.role}</div>
+                <div className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  {rev.location}
+                </div>
+                <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium">
+                  {rev.service}
+                </div>
               </div>
             </div>
           ))}
