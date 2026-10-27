@@ -67,9 +67,13 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     adminLogout,
   } = useBusiness();
 
-  // Auth PIN state
+  // Auth PIN state & methods
   const [pinInput, setPinInput] = useState('');
   const [authError, setAuthError] = useState('');
+  const [ownerEmail, setOwnerEmail] = useState('info@fixmyiron.com');
+  const [ownerPassword, setOwnerPassword] = useState('');
+  const [authMode, setAuthMode] = useState<'pin_quick' | 'email_pass' | 'google'>('pin_quick');
+  const [isSubmittingAuth, setIsSubmittingAuth] = useState(false);
 
   // Active Admin Tab
   const [activeTab, setActiveTab] = useState<
@@ -123,14 +127,35 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
     setTimeout(() => setSaveSuccessNotice(null), 3000);
   };
 
-  const handleLogin = async (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent, overrideMode?: 'pin_quick' | 'email_pass' | 'google') => {
     if (e) e.preventDefault();
-    const ok = await adminLogin(pinInput);
-    if (ok) {
-      setAuthError('');
-      setPinInput('');
-    } else {
-      setAuthError('Invalid owner PIN or authentication cancelled.');
+    setIsSubmittingAuth(true);
+    setAuthError('');
+    try {
+      const mode = overrideMode || authMode;
+      let res;
+      if (mode === 'email_pass') {
+        res = await adminLogin(pinInput, ownerEmail, ownerPassword);
+      } else if (mode === 'google') {
+        res = await adminLogin(pinInput);
+      } else {
+        res = await adminLogin(
+          pinInput,
+          ownerEmail && ownerPassword ? ownerEmail : undefined,
+          ownerPassword || undefined
+        );
+      }
+      if (res.success) {
+        setAuthError('');
+        setPinInput('');
+      } else {
+        setAuthError(res.error || 'Authentication failed. Please check your PIN.');
+      }
+    } catch (err: unknown) {
+      const errObj = err as { message?: string };
+      setAuthError(errObj?.message || 'Authentication error occurred.');
+    } finally {
+      setIsSubmittingAuth(false);
     }
   };
 
@@ -284,37 +309,152 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
         {/* Auth Screen if not logged in */}
         {!isAdminAuthenticated ? (
-          <div className="flex-1 p-6 sm:p-12 flex flex-col items-center justify-center text-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-3xl bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] mb-4 shadow-xl">
+          <div className="flex-1 p-6 sm:p-10 flex flex-col items-center justify-center text-center max-w-lg mx-auto">
+            <div className="w-16 h-16 rounded-3xl bg-[#d4af37]/15 border border-[#d4af37]/40 flex items-center justify-center text-[#d4af37] mb-3 shadow-xl">
               <Lock className="w-8 h-8" />
             </div>
 
-            <h4 className="font-serif font-black text-2xl mb-2 text-[#d4af37]">Owner Authentication</h4>
-            <p className="text-xs opacity-80 mb-6">
-              Enter Ken’nyzhae's security PIN to access site settings, booking management, and live color themes.
+            <h4 className="font-serif font-black text-2xl mb-1 text-[#d4af37]">Owner & Business Hub Authentication</h4>
+            <p className="text-xs opacity-80 mb-4 max-w-md">
+              Enter Ken’nyzhae's security PIN (<span className="font-mono text-[#d4af37] font-bold">nana2026</span>) to access site copy, calendar, bookings, and live theme controls.
             </p>
 
-            <form onSubmit={handleLogin} className="w-full space-y-4">
+            {/* Cloudflare Domain Notice Badge */}
+            <div
+              className={`w-full p-3 mb-4 rounded-xl text-left border text-xs ${
+                isDark ? 'bg-[#071d3a] border-[#d4af37]/30 text-slate-300' : 'bg-amber-50/80 border-[#d4af37]/40 text-[#04142b]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 font-bold text-[#d4af37] mb-1">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Cloudflare & Domain Authentication Notice</span>
+              </div>
+              <p className="text-[11px] leading-relaxed opacity-90">
+                Current Domain: <strong className="font-mono text-[#d4af37]">{typeof window !== 'undefined' ? window.location.hostname : 'localhost'}</strong>.
+                If Google Sign-In displays an <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300">auth/unauthorized-domain</code> error on Cloudflare, use <strong>Owner Email & Password</strong> below—it works on every domain without OAuth restrictions.
+              </p>
+            </div>
+
+            {/* Auth Mode Tabs */}
+            <div className="w-full flex border-b border-[#d4af37]/20 mb-4 text-xs font-bold">
+              <button
+                type="button"
+                onClick={() => setAuthMode('pin_quick')}
+                className={`flex-1 py-2 text-center border-b-2 transition-all cursor-pointer ${
+                  authMode === 'pin_quick'
+                    ? 'border-[#d4af37] text-[#d4af37]'
+                    : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                1. Quick PIN Unlock
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('email_pass')}
+                className={`flex-1 py-2 text-center border-b-2 transition-all cursor-pointer ${
+                  authMode === 'email_pass'
+                    ? 'border-[#d4af37] text-[#d4af37]'
+                    : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                2. Owner Email & Password
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('google')}
+                className={`flex-1 py-2 text-center border-b-2 transition-all cursor-pointer ${
+                  authMode === 'google'
+                    ? 'border-[#d4af37] text-[#d4af37]'
+                    : 'border-transparent opacity-60 hover:opacity-100'
+                }`}
+              >
+                3. Google Account
+              </button>
+            </div>
+
+            <form onSubmit={(e) => handleLogin(e)} className="w-full space-y-3.5 text-left">
+              {/* PIN Input (Always Required) */}
               <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#d4af37] mb-1">
+                  Owner Security PIN *
+                </label>
                 <input
                   type="password"
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value)}
-                  placeholder="Enter Owner Security PIN"
-                  className={`w-full px-4 py-3 rounded-2xl border text-center font-mono text-base tracking-widest focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                  placeholder="Enter Owner PIN (nana2026)"
+                  className={`w-full px-4 py-2.5 rounded-xl border text-center font-mono text-base tracking-widest focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
                     isDark ? 'bg-[#061833] border-white/20 text-white' : 'bg-white border-slate-300 text-slate-900'
                   }`}
                   autoFocus
                 />
-                {authError && <p className="text-xs text-rose-400 font-semibold mt-2">{authError}</p>}
               </div>
+
+              {/* Mode 2: Email & Password for Cloudflare */}
+              {authMode === 'email_pass' && (
+                <div className="space-y-3 pt-1 animate-in fade-in">
+                  <div>
+                    <label className="block text-xs font-semibold opacity-90 mb-1">
+                      Owner Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={ownerEmail}
+                      onChange={(e) => setOwnerEmail(e.target.value)}
+                      placeholder="info@fixmyiron.com"
+                      className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                        isDark ? 'bg-[#061833] border-white/20 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold opacity-90 mb-1">
+                      Password (min 6 chars)
+                    </label>
+                    <input
+                      type="password"
+                      value={ownerPassword}
+                      onChange={(e) => setOwnerPassword(e.target.value)}
+                      placeholder="Enter password (creates account automatically if new)"
+                      className={`w-full px-3 py-2 rounded-xl border text-xs focus:outline-none focus:ring-2 focus:ring-[#d4af37] ${
+                        isDark ? 'bg-[#061833] border-white/20 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Mode 3: Google Note */}
+              {authMode === 'google' && (
+                <div
+                  className={`p-3 rounded-xl border text-xs ${
+                    isDark ? 'bg-[#061833] border-white/10 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                  }`}
+                >
+                  <p>
+                    Clicking unlock will open the Google popup. If Cloudflare blocks the popup or displays <code className="text-amber-400 font-mono">auth/unauthorized-domain</code>, switch to the <strong>Owner Email & Password</strong> tab above.
+                  </p>
+                </div>
+              )}
+
+              {/* Error Message Display */}
+              {authError && (
+                <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/40 text-rose-300 text-xs font-medium space-y-1 text-left">
+                  <div className="flex items-center gap-1.5 font-bold text-rose-400">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>Authentication Notice</span>
+                  </div>
+                  <p className="leading-relaxed">{authError}</p>
+                </div>
+              )}
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isSubmittingAuth || !pinInput}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#aa8214] text-[#041226] font-black text-sm shadow-xl hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Unlock className="w-4 h-4" />
-                <span>Sign In & Unlock Owner Hub</span>
+                <span>{isSubmittingAuth ? 'Verifying & Unlocking...' : 'Unlock Owner Hub Now'}</span>
               </button>
             </form>
           </div>
