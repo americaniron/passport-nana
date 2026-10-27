@@ -12,6 +12,7 @@ import {
   Navigation,
   Loader2,
   Calendar,
+  Heart,
 } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
@@ -80,21 +81,21 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
               isDark
-                ? 'bg-cyan-950/80 border-cyan-400/30 text-cyan-300'
-                : 'bg-cyan-100 border-cyan-300 text-cyan-900'
+                ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
             }`}
           >
-            <Compass className="w-3.5 h-3.5" /> Service Area & Maps Grounded Exploration
+            <Compass className="w-3.5 h-3.5 text-[#d4af37]" /> Service Area & Maps Grounded Exploration
           </div>
           <h2
             className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
-              isDark ? 'text-white' : 'text-slate-950'
+              isDark ? 'text-white' : 'text-[#04142b]'
             }`}
           >
             Local Service Hubs & Adventure Days
           </h2>
-          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-slate-700 font-medium'}>
-            Based in the San Francisco Bay Area and Tampa FL, with 24/7 on-call dispatch and worldwide travel care. Explore safe, enriching adventure destinations verified via live Google Maps data.
+          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-[#334155] font-medium'}>
+            Making memories, one adventure at a time! Based in the SF Bay Area and Tampa FL, with 24/7 on-call dispatch and worldwide travel care.
           </p>
         </div>
 
@@ -107,13 +108,13 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
             }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               selectedHub === 'sf'
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 scale-105'
+                ? 'bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] shadow-lg shadow-amber-500/20 scale-105'
                 : isDark
-                ? 'bg-purple-950/60 text-slate-300 hover:text-white border border-purple-500/30'
-                : 'bg-white text-slate-700 hover:text-purple-950 border border-purple-200 shadow-sm'
+                ? 'bg-[#071c38]/70 text-slate-300 hover:text-white border border-[#d4af37]/30'
+                : 'bg-white text-[#04142b] hover:text-[#b8860b] border border-[#d4af37]/35 shadow-sm'
             }`}
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-4 h-4 text-[#d4af37]" />
             <span>SF Bay Area (Primary Hub)</span>
           </button>
 
@@ -124,13 +125,13 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
             }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               selectedHub === 'tampa'
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 scale-105'
+                ? 'bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] shadow-lg shadow-amber-500/20 scale-105'
                 : isDark
-                ? 'bg-purple-950/60 text-slate-300 hover:text-white border border-purple-500/30'
-                : 'bg-white text-slate-700 hover:text-purple-950 border border-purple-200 shadow-sm'
+                ? 'bg-[#071c38]/70 text-slate-300 hover:text-white border border-[#d4af37]/30'
+                : 'bg-white text-[#04142b] hover:text-[#b8860b] border border-[#d4af37]/35 shadow-sm'
             }`}
           >
-            <MapPin className="w-4 h-4" />
+            <MapPin className="w-4 h-4 text-[#d4af37]" />
             <span>Tampa Bay, FL</span>
           </button>
 
@@ -141,13 +142,13 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
             }}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               selectedHub === 'travel'
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 scale-105'
+                ? 'bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] shadow-lg shadow-amber-500/20 scale-105'
                 : isDark
-                ? 'bg-purple-950/60 text-slate-300 hover:text-white border border-purple-500/30'
-                : 'bg-white text-slate-700 hover:text-purple-950 border border-purple-200 shadow-sm'
+                ? 'bg-[#071c38]/70 text-slate-300 hover:text-white border border-[#d4af37]/30'
+                : 'bg-white text-[#04142b] hover:text-[#b8860b] border border-[#d4af37]/35 shadow-sm'
             }`}
           >
-            <Navigation className="w-4 h-4" />
+            <Navigation className="w-4 h-4 text-[#d4af37]" />
             <span>Passport Travel</span>
           </button>
         </div>
@@ -156,21 +157,21 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
           {/* Territory Details */}
           <div
-            className={`lg:col-span-5 rounded-3xl border p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xl text-left transition-colors ${
+            className={`lg:col-span-5 rounded-3xl border-2 p-6 sm:p-8 flex flex-col justify-between space-y-6 shadow-xl text-left transition-colors ${
               isDark
-                ? 'bg-[#14062f] border-cyan-400/30 text-white'
-                : 'bg-white/95 border-purple-300 text-slate-900'
+                ? 'bg-[#061833]/95 border-[#d4af37]/45 text-white'
+                : 'bg-white/95 border-[#d4af37]/40 text-[#04142b]'
             }`}
           >
             <div className="space-y-4">
               <div
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${
                   isDark
-                    ? 'bg-cyan-950 text-cyan-300 border-cyan-400/30'
-                    : 'bg-cyan-100 text-cyan-900 border-cyan-200'
+                    ? 'bg-[#041226] text-[#f3d078] border-[#d4af37]/40'
+                    : 'bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40'
                 }`}
               >
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#dfb75c]" />
                 <span>24/7 Rapid On-Call Dispatch</span>
               </div>
 
@@ -182,7 +183,7 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                   : 'Global Passport Nanny Flights'}
               </h3>
 
-              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                 {selectedHub === 'sf'
                   ? 'Serving families across Opera Plaza, Civic Center, Hayes Valley, Mid-Market, Pacific Heights, Mission Bay, and surrounding Bay Area cities with immediate on-call babysitting, after-school pick-up, and adventure days.'
                   : selectedHub === 'tampa'
@@ -192,12 +193,12 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
 
               <div
                 className={`p-4 rounded-2xl border space-y-2 text-xs ${
-                  isDark ? 'bg-purple-950/60 border-purple-500/30' : 'bg-purple-50 border-purple-200'
+                  isDark ? 'bg-[#041226]/80 border-[#d4af37]/25' : 'bg-[#faf8f5] border-[#d4af37]/30'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Direct Emergency Line:</span>
-                  <a href="tel:3054096788" className="font-bold text-cyan-600 dark:text-cyan-300 hover:underline">
+                  <a href="tel:3054096788" className="font-bold text-[#dfb75c] hover:underline">
                     (305) 409-6788
                   </a>
                 </div>
@@ -207,16 +208,16 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className={isDark ? 'text-slate-300' : 'text-slate-600'}>Adventure Chaperone:</span>
-                  <span className="font-bold text-pink-600 dark:text-pink-300">Door-to-Door Escort</span>
+                  <span className="font-bold text-[#dfb75c]">Door-to-Door Escort</span>
                 </div>
               </div>
             </div>
 
             <button
               onClick={() => onOpenBooking('adventure-day')}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-sm shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 cursor-pointer"
             >
-              <Calendar className="w-4 h-4 text-slate-950" />
+              <Calendar className="w-4 h-4 text-[#041226]" />
               <span>Book An Adventure Day ($32/hr)</span>
             </button>
           </div>
@@ -224,8 +225,8 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
           {/* Curated Interactive Adventure Places */}
           <div className="lg:col-span-7 space-y-4 text-left">
             <div className="flex items-center justify-between">
-              <h4 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-950'}`}>
-                <Sparkles className="w-4 h-4 text-cyan-500" />
+              <h4 className={`text-lg font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
+                <Sparkles className="w-4 h-4 text-[#dfb75c]" />
                 <span>Featured Adventure Spots (Bay Area)</span>
               </h4>
               <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Curated by Nana</span>
@@ -237,29 +238,29 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                   key={i}
                   className={`p-4 rounded-2xl border transition-all flex flex-col justify-between space-y-3 group ${
                     isDark
-                      ? 'bg-[#14062f]/80 border-purple-500/30 hover:border-cyan-400/50'
-                      : 'bg-white border-purple-200 hover:border-purple-400 shadow-sm'
+                      ? 'bg-[#061833]/90 border-[#d4af37]/30 hover:border-[#dfb75c]'
+                      : 'bg-white border-[#d4af37]/35 hover:border-[#b8860b] shadow-sm'
                   }`}
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
                       <h5
                         className={`text-sm font-bold transition-colors line-clamp-1 ${
-                          isDark ? 'text-white group-hover:text-cyan-300' : 'text-slate-900 group-hover:text-purple-700'
+                          isDark ? 'text-white group-hover:text-[#f3d078]' : 'text-[#04142b] group-hover:text-[#b8860b]'
                         }`}
                       >
                         {spot.title}
                       </h5>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded-full shrink-0">
-                        <Star className="w-3 h-3 fill-amber-400 text-amber-500" />
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-500 dark:text-[#f3d078] bg-amber-400/10 dark:bg-[#041226] px-2 py-0.5 rounded-full shrink-0 border border-[#d4af37]/30">
+                        <Star className="w-3 h-3 fill-[#dfb75c] text-[#dfb75c]" />
                         {spot.rating}
                       </span>
                     </div>
-                    <p className="text-[11px] text-cyan-600 dark:text-cyan-400 font-semibold">{spot.category}</p>
-                    <p className={`text-xs line-clamp-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p className="text-[11px] text-[#dfb75c] font-semibold">{spot.category}</p>
+                    <p className={`text-xs line-clamp-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                       {spot.description}
                     </p>
-                    <p className="text-[11px] text-pink-600 dark:text-pink-300 italic">
+                    <p className="text-[11px] text-[#dfb75c] italic">
                       ❤️ Why kids love it: {spot.whyKidsLoveIt}
                     </p>
                   </div>
@@ -268,7 +269,7 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                     href={spot.uri}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-300 hover:text-purple-600 dark:hover:text-white transition-colors pt-2 border-t border-purple-500/20"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#dfb75c] hover:underline pt-2 border-t border-[#d4af37]/20"
                   >
                     <span>View on Google Maps</span>
                     <ExternalLink className="w-3 h-3" />
@@ -281,34 +282,34 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
 
         {/* Live Gemini Google Maps Grounding Tool Box */}
         <div
-          className={`rounded-3xl border p-6 sm:p-8 text-left shadow-2xl space-y-6 ${
+          className={`rounded-3xl border-2 p-6 sm:p-8 text-left shadow-2xl space-y-6 ${
             isDark
-              ? 'bg-gradient-to-r from-purple-950/80 via-slate-950 to-cyan-950/80 border-cyan-400/40 text-white'
-              : 'bg-gradient-to-r from-purple-50 via-white to-cyan-50 border-purple-300 text-slate-900'
+              ? 'bg-gradient-to-r from-[#071c38] via-[#041226] to-[#071c38] border-[#d4af37]/45 text-white'
+              : 'bg-gradient-to-r from-white via-[#faf7f0] to-white border-[#d4af37]/45 text-[#04142b]'
           }`}
         >
           <div className="space-y-2">
             <div
               className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${
                 isDark
-                  ? 'bg-cyan-950 border-cyan-400/30 text-cyan-300'
-                  : 'bg-cyan-100 border-cyan-300 text-cyan-900'
+                  ? 'bg-[#041226] border-[#d4af37]/40 text-[#f3d078]'
+                  : 'bg-[#faf8f5] border-[#d4af37]/40 text-[#04142b]'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-500 animate-spin" style={{ animationDuration: '6s' }} />
+              <Sparkles className="w-3.5 h-3.5 text-[#dfb75c] animate-spin" style={{ animationDuration: '6s' }} />
               <span>Gemini 3.8 Flash • Maps Grounding</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-black font-display">
               Live Google Maps Grounded Adventure Finder
             </h3>
-            <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+            <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
               Need fresh ideas for your child's specific neighborhood or vacation destination? Our AI queries real Google Maps places with verified addresses and links.
             </p>
           </div>
 
           <form onSubmit={handleSearchGrounding} className="grid grid-cols-1 md:grid-cols-12 gap-3">
             <div className="md:col-span-5">
-              <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? 'text-slate-300' : 'text-[#04142b]'}`}>
                 Location or Neighborhood
               </label>
               <input
@@ -316,16 +317,16 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
                 placeholder="e.g. San Francisco Hayes Valley, Tampa FL, Orlando"
-                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-cyan-400 ${
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
                   isDark
-                    ? 'bg-purple-950/90 border-purple-500/40 text-white'
-                    : 'bg-white border-purple-200 text-slate-900'
+                    ? 'bg-[#041226] border-[#d4af37]/35 text-white'
+                    : 'bg-white border-[#d4af37]/35 text-[#04142b]'
                 }`}
               />
             </div>
 
             <div className="md:col-span-5">
-              <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              <label className={`block text-[11px] font-bold uppercase mb-1 ${isDark ? 'text-slate-300' : 'text-[#04142b]'}`}>
                 Activity Preference
               </label>
               <input
@@ -333,10 +334,10 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="e.g. Hands-on art studio, outdoor splash park, toddler play"
-                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-cyan-400 ${
+                className={`w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:border-[#d4af37] ${
                   isDark
-                    ? 'bg-purple-950/90 border-purple-500/40 text-white'
-                    : 'bg-white border-purple-200 text-slate-900'
+                    ? 'bg-[#041226] border-[#d4af37]/35 text-white'
+                    : 'bg-white border-[#d4af37]/35 text-[#04142b]'
                 }`}
               />
             </div>
@@ -345,16 +346,16 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-cyan-400 hover:bg-cyan-300 text-slate-950 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20 disabled:opacity-50 transition-all hover:scale-105 cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 disabled:opacity-50 transition-all hover:scale-105 cursor-pointer"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#041226]" />
                     <span>Searching...</span>
                   </>
                 ) : (
                   <>
-                    <Search className="w-4 h-4" />
+                    <Search className="w-4 h-4 text-[#041226]" />
                     <span>Find Spots</span>
                   </>
                 )}
@@ -364,8 +365,8 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
 
           {/* Results Display */}
           {groundedResults && (
-            <div className="mt-6 pt-6 border-t border-purple-500/30 space-y-4">
-              <p className={`text-sm leading-relaxed whitespace-pre-line ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+            <div className="mt-6 pt-6 border-t border-[#d4af37]/25 space-y-4">
+              <p className={`text-sm leading-relaxed whitespace-pre-line ${isDark ? 'text-slate-200' : 'text-[#1e293b]'}`}>
                 {groundedResults.text}
               </p>
 
@@ -376,8 +377,8 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                       key={idx}
                       className={`p-4 rounded-2xl border space-y-2 flex flex-col justify-between ${
                         isDark
-                          ? 'bg-purple-950/60 border-cyan-400/30 text-white'
-                          : 'bg-white border-purple-200 text-slate-900 shadow-sm'
+                          ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                          : 'bg-white border-[#d4af37]/35 text-[#04142b] shadow-sm'
                       }`}
                     >
                       <div className="space-y-1">
@@ -386,7 +387,7 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                         </h5>
                         {place.address && (
                           <p className={`text-[11px] flex items-start gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                            <MapPin className="w-3 h-3 text-cyan-500 shrink-0 mt-0.5" />
+                            <MapPin className="w-3 h-3 text-[#dfb75c] shrink-0 mt-0.5" />
                             <span className="line-clamp-1">{place.address}</span>
                           </p>
                         )}
@@ -402,7 +403,7 @@ export const AdventureMapSection: React.FC<AdventureMapSectionProps> = ({
                           href={place.uri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-300 hover:underline pt-2 border-t border-purple-500/20"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#dfb75c] hover:underline pt-2 border-t border-[#d4af37]/20"
                         >
                           <span>Open in Google Maps</span>
                           <ExternalLink className="w-3 h-3" />

@@ -49,11 +49,13 @@ export const SectionBackgroundVideo: React.FC<SectionBackgroundVideoProps> = ({
       ) : null}
 
       {/* Atmospheric Theme-aware Gradient Overlay for Optimal Text Contrast */}
+      {/* Dark Theme: Deep Royal Midnight Navy gradient overlay */}
+      {/* Light Theme: Alabaster Pearl & Warm Marble gradient overlay */}
       <div
         className={`absolute inset-0 transition-colors duration-500 ${
           isDark
-            ? 'bg-gradient-to-b from-[#0b021a]/80 via-[#0d0322]/65 to-[#0b021a]/90'
-            : 'bg-gradient-to-b from-[#fcfaff]/85 via-[#f8f5ff]/70 to-[#fcfaff]/90'
+            ? 'bg-gradient-to-b from-[#030d1e]/85 via-[#061833]/70 to-[#030d1e]/92'
+            : 'bg-gradient-to-b from-[#faf8f5]/85 via-[#f5f2eb]/75 to-[#faf8f5]/92'
         }`}
       />
     </div>

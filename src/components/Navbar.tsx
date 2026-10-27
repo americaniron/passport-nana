@@ -21,16 +21,16 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header
       className={`sticky top-0 z-40 backdrop-blur-md transition-colors duration-300 border-b ${
         isDark
-          ? 'bg-[#0b021a]/90 border-cyan-500/20 text-white'
-          : 'bg-white/90 border-purple-200 text-slate-900 shadow-sm'
+          ? 'bg-[#030d1e]/90 border-[#d4af37]/30 text-white'
+          : 'bg-white/92 border-[#d4af37]/30 text-[#04142b] shadow-sm'
       }`}
     >
       {/* Top emergency & on-call bar */}
       <div
         className={`text-xs py-1.5 px-4 text-center transition-colors duration-300 ${
           isDark
-            ? 'bg-gradient-to-r from-purple-950 via-indigo-950 to-cyan-950 text-cyan-200 border-b border-cyan-400/20'
-            : 'bg-gradient-to-r from-purple-100 via-indigo-50 to-cyan-50 text-purple-900 border-b border-purple-200'
+            ? 'bg-gradient-to-r from-[#020813] via-[#071c38] to-[#020813] text-[#f3d078] border-b border-[#d4af37]/20'
+            : 'bg-gradient-to-r from-[#fbf9f5] via-[#ffffff] to-[#fbf9f5] text-[#04142b] border-b border-[#d4af37]/20'
         }`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-2">
@@ -38,35 +38,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span
               className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                 isDark
-                  ? 'bg-cyan-400/20 text-cyan-300 border-cyan-400/40 animate-pulse'
-                  : 'bg-purple-600 text-white border-purple-700'
+                  ? 'bg-[#d4af37]/20 text-[#f3d078] border-[#d4af37]/40 animate-pulse'
+                  : 'bg-[#04142b] text-[#f3d078] border-[#04142b]'
               }`}
             >
               <Clock className="w-3 h-3 mr-1" /> 24-HOURS ON-CALL
             </span>
             <span
               className={`font-medium ${
-                isDark ? 'text-slate-200' : 'text-purple-900'
+                isDark ? 'text-slate-200' : 'text-[#04142b]'
               }`}
             >
-              San Francisco Bay Area • Tampa FL • Worldwide Travel
+              San Francisco Bay Area • Tampa FL • Worldwide Travel Nanny
             </span>
           </div>
           <div className="flex items-center gap-4 mx-auto sm:mx-0">
             <a
               href="tel:3054096788"
               className={`flex items-center gap-1 font-semibold transition-colors ${
-                isDark ? 'text-white hover:text-cyan-300' : 'text-purple-900 hover:text-cyan-700'
+                isDark ? 'text-white hover:text-[#f3d078]' : 'text-[#04142b] hover:text-[#b8860b]'
               }`}
             >
-              <Phone className="w-3 h-3 text-cyan-500" />
+              <Phone className="w-3 h-3 text-[#d4af37]" />
               <span>Call: (305) 409-6788</span>
             </a>
-            <span className={isDark ? 'text-purple-400' : 'text-purple-300'}>|</span>
+            <span className={isDark ? 'text-[#d4af37]/40' : 'text-[#d4af37]/50'}>|</span>
             <a
               href="sms:3054096788"
               className={`hidden md:flex items-center gap-1 transition-colors ${
-                isDark ? 'text-cyan-300 hover:text-white' : 'text-purple-700 hover:text-purple-900 font-semibold'
+                isDark ? 'text-[#f3d078] hover:text-white' : 'text-[#b8860b] hover:text-[#04142b] font-semibold'
               }`}
             >
               <MessageSquare className="w-3 h-3" />
@@ -81,13 +81,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center justify-between h-20">
           {/* Logo brand */}
           <a href="#" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 via-purple-600 to-fuchsia-600 p-0.5 shadow-lg shadow-purple-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#d4af37] via-[#f3d078] to-[#aa7c11] p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
               <div
                 className={`w-full h-full rounded-[14px] flex items-center justify-center overflow-hidden transition-colors ${
-                  isDark ? 'bg-[#12042b]' : 'bg-white'
+                  isDark ? 'bg-[#041226]' : 'bg-white'
                 }`}
               >
-                <span className="text-2xl font-brand font-black text-transparent bg-clip-text bg-gradient-to-tr from-cyan-500 to-purple-600">
+                <span className="text-xl font-brand font-black text-transparent bg-clip-text bg-gradient-to-tr from-[#d4af37] via-[#f3d078] to-[#aa7c11]">
                   KD
                 </span>
               </div>
@@ -96,7 +96,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="flex items-center gap-1">
                 <span
                   className={`text-2xl font-black tracking-tight font-brand transition-colors ${
-                    isDark ? 'text-white group-hover:text-cyan-300' : 'text-purple-950 group-hover:text-purple-700'
+                    isDark ? 'text-white group-hover:text-[#f3d078]' : 'text-[#04142b] group-hover:text-[#b8860b]'
                   }`}
                 >
                   Kweenz Dream
@@ -105,10 +105,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <p
                 className={`text-[11px] font-semibold uppercase tracking-wider ${
-                  isDark ? 'text-cyan-400' : 'text-purple-700'
+                  isDark ? 'text-[#d4af37]' : 'text-[#b8860b]'
                 }`}
               >
-                Childcare • Passport Nanny • Locs
+                Passport Nanny • Elite Care • Crown Locs
               </p>
             </div>
           </a>
@@ -116,47 +116,47 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Desktop Nav Links */}
           <nav
             className={`hidden lg:flex items-center gap-7 text-sm font-semibold transition-colors ${
-              isDark ? 'text-slate-200' : 'text-slate-700'
+              isDark ? 'text-slate-200' : 'text-[#1e293b]'
             }`}
           >
             <a
               href="#services"
-              className={isDark ? 'hover:text-cyan-300 transition-colors' : 'hover:text-purple-600 transition-colors'}
+              className={isDark ? 'hover:text-[#f3d078] transition-colors' : 'hover:text-[#b8860b] transition-colors'}
             >
               Services
             </a>
             <a
               href="#passport-nanny"
               className={`flex items-center gap-1 transition-colors ${
-                isDark ? 'hover:text-cyan-300' : 'hover:text-purple-600'
+                isDark ? 'hover:text-[#f3d078]' : 'hover:text-[#b8860b]'
               }`}
             >
               <span>Passport Nanny</span>
-              <span className="text-[10px] bg-amber-400/20 text-amber-500 dark:text-amber-300 px-1.5 py-0.5 rounded font-bold border border-amber-400/40">
+              <span className="text-[10px] bg-[#d4af37]/20 text-[#f3d078] dark:text-[#f3d078] px-1.5 py-0.5 rounded font-bold border border-[#d4af37]/40">
                 VIP
               </span>
             </a>
             <a
               href="#hair-locs"
-              className={isDark ? 'hover:text-cyan-300 transition-colors' : 'hover:text-purple-600 transition-colors'}
+              className={isDark ? 'hover:text-[#f3d078] transition-colors' : 'hover:text-[#b8860b] transition-colors'}
             >
               Locks & Braids
             </a>
             <a
               href="#adventures"
-              className={isDark ? 'hover:text-cyan-300 transition-colors' : 'hover:text-purple-600 transition-colors'}
+              className={isDark ? 'hover:text-[#f3d078] transition-colors' : 'hover:text-[#b8860b] transition-colors'}
             >
               Adventures & Maps
             </a>
             <a
               href="#calculator"
-              className={isDark ? 'hover:text-cyan-300 transition-colors' : 'hover:text-purple-600 transition-colors'}
+              className={isDark ? 'hover:text-[#f3d078] transition-colors' : 'hover:text-[#b8860b] transition-colors'}
             >
               Price Estimator
             </a>
             <a
               href="#about"
-              className={isDark ? 'hover:text-cyan-300 transition-colors' : 'hover:text-purple-600 transition-colors'}
+              className={isDark ? 'hover:text-[#f3d078] transition-colors' : 'hover:text-[#b8860b] transition-colors'}
             >
               Meet Nana
             </a>
@@ -171,20 +171,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={onOpenChat}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border shadow-sm transition-all hover:scale-105 ${
                 isDark
-                  ? 'bg-purple-900/60 hover:bg-purple-800/80 text-cyan-300 border-purple-500/40'
-                  : 'bg-purple-100 hover:bg-purple-200 text-purple-900 border-purple-300'
+                  ? 'bg-[#071c38] hover:bg-[#0c2b52] text-[#f3d078] border-[#d4af37]/40'
+                  : 'bg-[#faf8f5] hover:bg-[#f1ebe0] text-[#04142b] border-[#d4af37]/40'
               }`}
               aria-label="Open AI Concierge Chat"
             >
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />
+              <Sparkles className="w-3.5 h-3.5 text-[#d4af37] animate-spin" style={{ animationDuration: '8s' }} />
               <span>AI Concierge</span>
             </button>
 
             <button
               onClick={() => onOpenBooking()}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 shadow-lg shadow-cyan-500/25 transition-all hover:scale-105 active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95"
             >
-              <Calendar className="w-4 h-4 text-slate-950" />
+              <Calendar className="w-4 h-4 text-[#041226]" />
               <span>Book Appointment</span>
             </button>
           </div>
@@ -194,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <ThemeToggle />
             <button
               onClick={() => onOpenBooking()}
-              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-400 text-slate-950"
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#d4af37] text-[#041226]"
             >
               Book
             </button>
@@ -202,8 +202,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className={`p-2 rounded-lg border transition-colors ${
                 isDark
-                  ? 'bg-purple-900/40 border-purple-500/30 text-slate-200 hover:text-white'
-                  : 'bg-purple-100 border-purple-200 text-purple-900'
+                  ? 'bg-[#071c38] border-[#d4af37]/30 text-slate-200 hover:text-white'
+                  : 'bg-[#faf8f5] border-[#d4af37]/30 text-[#04142b]'
               }`}
               aria-label="Toggle navigation menu"
             >
@@ -218,8 +218,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div
           className={`lg:hidden border-b px-4 pt-3 pb-6 space-y-3 transition-colors ${
             isDark
-              ? 'bg-[#100326] border-purple-500/30 text-slate-200'
-              : 'bg-white border-purple-200 text-slate-900'
+              ? 'bg-[#041226] border-[#d4af37]/30 text-slate-200'
+              : 'bg-white border-[#d4af37]/30 text-[#04142b]'
           }`}
         >
           <div className="flex flex-col space-y-2 text-base font-semibold">
@@ -227,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#services"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
               Services Catalog
@@ -236,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#passport-nanny"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
               Passport Nanny (Travel)
@@ -245,7 +245,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#hair-locs"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
               Locks & Braids Artistry
@@ -254,7 +254,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#adventures"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
               Adventures & Google Maps
@@ -263,64 +263,60 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="#calculator"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
-              Interactive Price Calculator
+              Price Calculator
             </a>
             <a
               href="#about"
               onClick={() => setMobileMenuOpen(false)}
               className={`p-2 rounded-lg ${
-                isDark ? 'hover:bg-purple-950/60 hover:text-cyan-300' : 'hover:bg-purple-50 hover:text-purple-700'
+                isDark ? 'hover:bg-[#071c38] hover:text-[#f3d078]' : 'hover:bg-[#faf8f5] hover:text-[#b8860b]'
               }`}
             >
               About Ken'nyzhae Nathaniel
             </a>
           </div>
 
-          <div
-            className={`pt-3 border-t grid grid-cols-2 gap-2 ${
-              isDark ? 'border-purple-500/20' : 'border-purple-200'
-            }`}
-          >
+          <div className="pt-4 border-t border-[#d4af37]/20 flex flex-col gap-2.5">
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenChat();
               }}
-              className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-semibold ${
+              className={`w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border ${
                 isDark
-                  ? 'bg-purple-900/60 text-cyan-300 border-purple-500/40'
-                  : 'bg-purple-100 text-purple-900 border-purple-200'
+                  ? 'bg-[#071c38] text-[#f3d078] border-[#d4af37]/40'
+                  : 'bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>AI Concierge</span>
+              <Sparkles className="w-4 h-4 text-[#d4af37]" />
+              <span>Ask AI Care Concierge</span>
             </button>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenHairAdvisor();
               }}
-              className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-semibold ${
+              className={`w-full py-2.5 px-4 rounded-xl text-sm font-bold flex items-center justify-center gap-2 border ${
                 isDark
-                  ? 'bg-cyan-950/60 text-cyan-200 border-cyan-500/40'
-                  : 'bg-cyan-100 text-cyan-900 border-cyan-200'
+                  ? 'bg-[#071c38] text-slate-200 border-[#d4af37]/30'
+                  : 'bg-white text-[#04142b] border-[#d4af37]/30'
               }`}
             >
-              <span>Hair Advisor</span>
+              <span>Loc & Hair Care Diagnostic</span>
             </button>
-          </div>
-
-          <div className="pt-2">
-            <a
-              href="tel:3054096788"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-700 text-white font-bold text-sm shadow-md"
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenBooking();
+              }}
+              className="w-full py-3 px-4 rounded-xl text-sm font-bold bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] shadow-lg flex items-center justify-center gap-2"
             >
-              <Phone className="w-4 h-4 text-cyan-300" />
-              <span>Direct Call: (305) 409-6788</span>
-            </a>
+              <Calendar className="w-4 h-4" />
+              <span>Book Appointment Now</span>
+            </button>
           </div>
         </div>
       )}

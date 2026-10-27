@@ -50,30 +50,30 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
               isDark
-                ? 'bg-cyan-950/80 border-cyan-400/30 text-cyan-300'
-                : 'bg-purple-100 border-purple-300 text-purple-900'
+                ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
             }`}
           >
-            <Calculator className="w-3.5 h-3.5" /> Transparent & Upfront Rates
+            <Calculator className="w-3.5 h-3.5 text-[#d4af37]" /> Transparent & Upfront Rates
           </div>
           <h2
             className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
-              isDark ? 'text-white' : 'text-slate-950'
+              isDark ? 'text-white' : 'text-[#04142b]'
             }`}
           >
             Interactive Rate & Care Estimator
           </h2>
-          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-slate-700 font-medium'}>
+          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-[#334155] font-medium'}>
             No surprise invoices or hidden charges. Customize your hours, number of children, and care requirements for an instant breakdown.
           </p>
         </div>
 
         {/* Calculator Main Box */}
         <div
-          className={`max-w-4xl mx-auto rounded-3xl border p-6 sm:p-10 shadow-2xl relative overflow-hidden transition-colors ${
+          className={`max-w-4xl mx-auto rounded-3xl border-2 p-6 sm:p-10 shadow-2xl relative overflow-hidden transition-colors ${
             isDark
-              ? 'bg-[#14062f] border-cyan-400/30 text-white'
-              : 'bg-white/95 border-purple-300 text-slate-900'
+              ? 'bg-[#061833]/95 border-[#d4af37]/50 text-white'
+              : 'bg-white/95 border-[#d4af37]/45 text-[#04142b]'
           }`}
         >
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
@@ -81,7 +81,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
             <div className="md:col-span-7 space-y-6 text-left">
               {/* Service Select */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-300">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#dfb75c]">
                   Select Care or Hair Service
                 </label>
                 <select
@@ -94,14 +94,14 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                       setHours(s.minHours);
                     }
                   }}
-                  className={`w-full px-4 py-3 rounded-xl border font-medium focus:outline-none focus:border-cyan-400 transition-colors ${
+                  className={`w-full px-4 py-3 rounded-xl border font-medium focus:outline-none focus:border-[#d4af37] transition-colors ${
                     isDark
-                      ? 'bg-purple-950/80 border-purple-500/40 text-white'
-                      : 'bg-slate-50 border-purple-200 text-slate-900'
+                      ? 'bg-[#041226] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
                   }`}
                 >
                   {SERVICES.map((s) => (
-                    <option key={s.id} value={s.id} className={isDark ? 'bg-purple-950 text-white' : 'bg-white text-slate-900'}>
+                    <option key={s.id} value={s.id} className={isDark ? 'bg-[#041226] text-white' : 'bg-white text-[#04142b]'}>
                       {s.title} ({s.durationLabel})
                     </option>
                   ))}
@@ -112,15 +112,15 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
               {isHourly && (
                 <div
                   className={`space-y-3 p-4 rounded-2xl border ${
-                    isDark ? 'bg-purple-950/40 border-purple-500/20' : 'bg-purple-50 border-purple-200'
+                    isDark ? 'bg-[#041226]/80 border-[#d4af37]/25' : 'bg-[#faf8f5] border-[#d4af37]/30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                      <Clock className="w-4 h-4 text-cyan-500" />
+                    <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-300' : 'text-[#04142b]'}`}>
+                      <Clock className="w-4 h-4 text-[#dfb75c]" />
                       <span>Duration (Hours)</span>
                     </label>
-                    <span className="text-base font-black text-cyan-600 dark:text-cyan-300">
+                    <span className="text-base font-black text-[#dfb75c]">
                       {hours} {hours === 1 ? 'Hour' : 'Hours'}
                     </span>
                   </div>
@@ -131,9 +131,9 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                     step={1}
                     value={hours}
                     onChange={(e) => setHours(parseInt(e.target.value, 10))}
-                    className="w-full accent-cyan-500 cursor-pointer h-2 bg-purple-200 dark:bg-purple-900 rounded-lg"
+                    className="w-full accent-[#d4af37] cursor-pointer h-2 bg-[#0a2346] rounded-lg"
                   />
-                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                  <div className="flex justify-between text-[11px] text-slate-400">
                     <span>Min: {minHours} hrs requirement</span>
                     <span>Full day / 16 hrs max</span>
                   </div>
@@ -144,15 +144,15 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
               {selectedService.category !== 'hair' && selectedService.category !== 'pet' && (
                 <div
                   className={`space-y-3 p-4 rounded-2xl border ${
-                    isDark ? 'bg-purple-950/40 border-purple-500/20' : 'bg-purple-50 border-purple-200'
+                    isDark ? 'bg-[#041226]/80 border-[#d4af37]/25' : 'bg-[#faf8f5] border-[#d4af37]/30'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                      <Users className="w-4 h-4 text-pink-500" />
+                    <label className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-slate-300' : 'text-[#04142b]'}`}>
+                      <Users className="w-4 h-4 text-[#dfb75c]" />
                       <span>Number of Children</span>
                     </label>
-                    <span className="text-base font-black text-pink-600 dark:text-pink-300">
+                    <span className="text-base font-black text-[#dfb75c]">
                       {childrenCount} {childrenCount === 1 ? 'Child' : 'Children'}
                     </span>
                   </div>
@@ -164,10 +164,10 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                         onClick={() => setChildrenCount(count)}
                         className={`py-2 rounded-xl text-sm font-bold border transition-all cursor-pointer ${
                           childrenCount === count
-                            ? 'bg-pink-600 text-white border-pink-500 shadow-md shadow-pink-500/20'
+                            ? 'bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] border-[#d4af37] shadow-md shadow-amber-500/20'
                             : isDark
-                            ? 'bg-purple-950/60 text-slate-300 hover:text-white border-purple-500/30'
-                            : 'bg-white text-slate-700 hover:text-purple-900 border-purple-200'
+                            ? 'bg-[#071c38] text-slate-300 hover:text-white border-[#d4af37]/30'
+                            : 'bg-white text-[#04142b] hover:text-[#b8860b] border-[#d4af37]/35'
                         }`}
                       >
                         {count} {count === 1 ? 'Child' : 'Kids'}
@@ -175,7 +175,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                     ))}
                   </div>
                   {childrenCount > 1 && selectedService.additionalChildRate ? (
-                    <p className="text-[11px] text-pink-600 dark:text-pink-300">
+                    <p className="text-[11px] text-[#dfb75c]">
                       +${selectedService.additionalChildRate}/hr for each additional child ({childrenCount - 1} extra child: +${(childrenCount - 1) * selectedService.additionalChildRate}/hr).
                     </p>
                   ) : null}
@@ -183,13 +183,13 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
               )}
 
               {/* Special Inclusions Summary */}
-              <div className={`space-y-1 text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              <div className={`space-y-1 text-xs ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                 <div className="flex items-center gap-2 font-semibold">
-                  <Check className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <Check className="w-4 h-4 text-[#dfb75c] shrink-0" />
                   <span>Includes live parent SMS check-ins & photo updates</span>
                 </div>
                 <div className="flex items-center gap-2 font-semibold">
-                  <Check className="w-4 h-4 text-cyan-500 shrink-0" />
+                  <Check className="w-4 h-4 text-[#dfb75c] shrink-0" />
                   <span>First-aid and emergency prepared caregiver</span>
                 </div>
               </div>
@@ -197,15 +197,15 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
 
             {/* Right Summary Card */}
             <div
-              className={`md:col-span-5 rounded-2xl border p-6 flex flex-col justify-between space-y-6 shadow-xl text-left ${
+              className={`md:col-span-5 rounded-2xl border-2 p-6 flex flex-col justify-between space-y-6 shadow-xl text-left ${
                 isDark
-                  ? 'bg-gradient-to-b from-purple-950 to-indigo-950 border-cyan-400/40 text-white'
-                  : 'bg-gradient-to-b from-purple-100 to-indigo-100 border-purple-300 text-slate-900'
+                  ? 'bg-gradient-to-b from-[#071c38] to-[#041226] border-[#d4af37]/50 text-white'
+                  : 'bg-gradient-to-b from-white to-[#faf7f0] border-[#d4af37]/50 text-[#04142b]'
               }`}
             >
               <div className="space-y-4">
-                <div className={`border-b pb-3 ${isDark ? 'border-purple-500/30' : 'border-purple-200'}`}>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400">
+                <div className={`border-b pb-3 ${isDark ? 'border-[#d4af37]/25' : 'border-[#d4af37]/25'}`}>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#dfb75c]">
                     Estimate Summary
                   </span>
                   <h3 className="text-xl font-black font-display mt-0.5">
@@ -214,7 +214,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                 </div>
 
                 {/* Line items */}
-                <div className={`space-y-2.5 text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+                <div className={`space-y-2.5 text-xs ${isDark ? 'text-slate-200' : 'text-[#334155]'}`}>
                   {isHourly && (
                     <>
                       <div className="flex justify-between">
@@ -224,7 +224,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                         </span>
                       </div>
                       {pricing.breakdown.extraChildFeePerHour > 0 && (
-                        <div className="flex justify-between text-pink-600 dark:text-pink-300">
+                        <div className="flex justify-between text-[#dfb75c]">
                           <span>Additional Children Fee:</span>
                           <span className="font-semibold">
                             +{formatCurrency(pricing.breakdown.extraChildFeePerHour)}/hr
@@ -233,7 +233,7 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                       )}
                       <div className="flex justify-between">
                         <span>Effective Hourly Rate:</span>
-                        <span className="font-bold text-cyan-600 dark:text-cyan-300">
+                        <span className="font-bold text-[#dfb75c]">
                           {formatCurrency(pricing.ratePerHour)}/hr
                         </span>
                       </div>
@@ -248,36 +248,43 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
 
                   {!isHourly && (
                     <div className="flex justify-between">
-                      <span>Rate Type:</span>
+                      <span>Standard Flat Package:</span>
                       <span className="font-semibold">
-                        {selectedService.priceType === 'free'
-                          ? '100% Free'
-                          : selectedService.priceType === 'deposit'
-                          ? 'Reservation Deposit'
-                          : 'Flat Rate Starting Price'}
+                        {formatCurrency(pricing.total)}
                       </span>
                     </div>
                   )}
 
-                  <div className={`pt-3 border-t flex justify-between items-baseline ${isDark ? 'border-purple-500/30' : 'border-purple-200'}`}>
-                    <span className="text-sm font-bold">Estimated Total:</span>
-                    <span className="text-2xl font-black text-cyan-600 dark:text-cyan-300 font-display">
-                      {formatCurrency(pricing.total)}
-                    </span>
-                  </div>
+                  {pricing.deposit > 0 && (
+                    <div className="flex justify-between pt-2 border-t border-[#d4af37]/20 text-[#dfb75c] font-semibold">
+                      <span>Booking Deposit Due:</span>
+                      <span>{formatCurrency(pricing.deposit)}</span>
+                    </div>
+                  )}
+                </div>
 
-                  <div className="flex justify-between items-baseline text-xs text-slate-500 dark:text-slate-400">
-                    <span>Required Slot Deposit:</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-300">
-                      {formatCurrency(pricing.deposit)}
-                    </span>
+                {/* Grand Total */}
+                <div
+                  className={`pt-4 border-t ${
+                    isDark ? 'border-[#d4af37]/30' : 'border-[#d4af37]/30'
+                  }`}
+                >
+                  <div className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                    Estimated Total
                   </div>
+                  <div className="text-3xl font-black text-[#dfb75c]">
+                    {pricing.total === 0 ? 'Free ($0.00)' : formatCurrency(pricing.total)}
+                  </div>
+                  {pricing.deposit > 0 && (
+                    <p className="text-[11px] text-slate-400 mt-1">
+                      Remaining balance payable after service completion.
+                    </p>
+                  )}
                 </div>
               </div>
 
-              {/* Action Button */}
+              {/* Book with this estimate */}
               <button
-                type="button"
                 onClick={() =>
                   onOpenBookingWithDetails({
                     serviceId: selectedService.id,
@@ -285,11 +292,11 @@ export const PricingCalculator: React.FC<PricingCalculatorProps> = ({
                     childrenCount,
                   })
                 }
-                className="w-full py-3.5 px-4 rounded-xl font-black text-sm bg-gradient-to-r from-cyan-400 via-cyan-300 to-blue-400 hover:from-cyan-300 hover:to-blue-300 text-slate-950 shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-2 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-extrabold text-sm shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
               >
-                <Calendar className="w-4 h-4 text-slate-950" />
-                <span>Reserve This Quote</span>
-                <ArrowRight className="w-4 h-4 text-slate-950" />
+                <Calendar className="w-4 h-4 text-[#041226]" />
+                <span>Reserve with This Estimate</span>
+                <ArrowRight className="w-4 h-4 text-[#041226]" />
               </button>
             </div>
           </div>

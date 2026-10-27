@@ -6,14 +6,16 @@
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  /* Dark Theme: Deep Royal Midnight Navy & Warm Metallic Gold */
   html.dark body {
-    color: #f1f5f9;
-    background-color: #0b021a;
+    color: #f8fafc;
+    background-color: #030d1e;
   }
 
+  /* Light Theme: Alabaster Carrara Marble & Royal Navy with Gold Foils */
   html.light body {
-    color: #1e1035;
-    background-color: #faf8ff;
+    color: #04142b;
+    background-color: #faf8f5;
   }
 
   h1, h2, h3, .font-display {
@@ -23,57 +25,84 @@
   .font-brand {
     font-family: 'Fredoka', 'Outfit', cursive, sans-serif;
   }
+
+  .font-script {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+  }
 }
 
-/* Custom dreamy gradients & glow effects */
-.bg-dream-gradient {
-  background: radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.25) 0%, transparent 40%),
-              radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.2) 0%, transparent 40%),
-              radial-gradient(circle at 50% 50%, rgba(94, 23, 235, 0.15) 0%, transparent 60%),
-              #0b021a;
+/* Luxury Royal Navy & Metallic Gold Palette */
+.bg-luxury-navy-dark {
+  background: radial-gradient(circle at 20% 15%, #071c38 0%, #030d1e 70%, #020813 100%);
 }
 
-.text-gradient-kween {
-  background: linear-gradient(135deg, #00f0ff 0%, #b388ff 50%, #ff80bf 100%);
+.bg-marble-light {
+  background: radial-gradient(circle at 10% 10%, #ffffff 0%, #faf8f5 55%, #f4efe6 100%);
+}
+
+/* Polished Metallic Gold Gradients */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #f7df94 0%, #dfb75c 40%, #c99a32 80%, #ffd978 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #00f0ff 0%, #80d8ff 100%);
+.text-gold-light {
+  background: linear-gradient(135deg, #fef3c7 0%, #f5d77f 60%, #dfb75c 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.text-gradient-gold {
-  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+.text-gold-dark {
+  background: linear-gradient(135deg, #b8860b 0%, #c99a32 60%, #946b10 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-/* Glassmorphism styles */
-.glass-panel {
-  background: rgba(30, 16, 56, 0.65);
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #dfb75c 0%, #f3d078 45%, #c59b27 100%);
+}
+
+.bg-gold-gradient-hover {
+  background: linear-gradient(135deg, #ebd07b 0%, #fae199 45%, #d4af37 100%);
+}
+
+/* Glass Panels with Navy & Gold Styling */
+.glass-navy-card {
+  background: rgba(6, 24, 49, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.5), 0 0 15px rgba(212, 175, 55, 0.08);
 }
 
-.glass-panel-cyan {
-  background: rgba(0, 240, 255, 0.06);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(0, 240, 255, 0.25);
+.glass-marble-card {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  box-shadow: 0 10px 30px -6px rgba(4, 20, 43, 0.08), 0 0 12px rgba(212, 175, 55, 0.12);
 }
 
-.glass-panel-purple {
-  background: rgba(103, 30, 203, 0.2);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(168, 85, 247, 0.25);
+/* Ornate Double-Gold Borders matching Passport Nanny cards */
+.gold-frame {
+  position: relative;
+  border: 2px solid #d4af37;
+  outline: 1px solid rgba(212, 175, 55, 0.4);
+  outline-offset: -5px;
 }
 
-/* Smooth animated shimmer */
+/* Subtle Golden Shimmer / Glow */
+.gold-glow {
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.25);
+}
+
+.gold-glow-lg {
+  box-shadow: 0 0 45px rgba(212, 175, 55, 0.35);
+}
+
+/* Floating animation */
 @keyframes floatSlow {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-8px); }

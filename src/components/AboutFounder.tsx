@@ -24,10 +24,10 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
           {/* Left Art & Portrait */}
           <div className="lg:col-span-5 relative flex justify-center">
             <div
-              className={`relative max-w-sm rounded-3xl overflow-hidden border shadow-2xl transition-all ${
+              className={`relative max-w-sm rounded-3xl overflow-hidden border-2 shadow-2xl transition-all ${
                 isDark
-                  ? 'border-cyan-400/40 bg-purple-950 shadow-purple-950/50'
-                  : 'border-purple-300 bg-white shadow-xl shadow-purple-100'
+                  ? 'border-[#d4af37]/60 bg-[#041226] shadow-black/50'
+                  : 'border-[#d4af37]/50 bg-white shadow-xl shadow-amber-900/5'
               }`}
             >
               <img
@@ -38,16 +38,16 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`absolute inset-0 bg-gradient-to-t ${
                   isDark
-                    ? 'from-slate-950 via-transparent to-transparent opacity-85'
-                    : 'from-slate-900/80 via-transparent to-transparent'
+                    ? 'from-[#041226] via-transparent to-transparent opacity-90'
+                    : 'from-[#04142b]/90 via-transparent to-transparent'
                 }`}
               />
               <div className="absolute bottom-4 left-4 right-4 text-left">
-                <div className="inline-block bg-purple-900/90 text-cyan-300 text-[11px] font-bold px-3 py-1 rounded-full border border-cyan-400/30 mb-1">
+                <div className="inline-block bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-[#041226] text-[11px] font-bold px-3 py-1 rounded-full shadow-md mb-1">
                   Founder & Care Director
                 </div>
                 <h3 className="text-xl font-black text-white font-display">Ken'nyzhae Nathaniel</h3>
-                <p className="text-xs text-slate-200">"Your Favorite Nanny" • Master Loctician</p>
+                <p className="text-xs text-[#f3d078]">"Your Favorite Nanny" • Master Loctician</p>
               </div>
             </div>
           </div>
@@ -58,15 +58,15 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${
                   isDark
-                    ? 'bg-purple-950/80 border-purple-400/30 text-purple-300'
-                    : 'bg-purple-100 border-purple-300 text-purple-900'
+                    ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                    : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
                 }`}
               >
-                <Heart className="w-3.5 h-3.5 text-pink-400" /> Passion, Safety & Dedication
+                <Heart className="w-3.5 h-3.5 text-[#dfb75c]" /> Passion, Safety & Dedication
               </div>
               <h2
                 className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display tracking-tight ${
-                  isDark ? 'text-white' : 'text-slate-950'
+                  isDark ? 'text-white' : 'text-[#04142b]'
                 }`}
               >
                 Meet Your Family's Favorite Partner in Care
@@ -75,7 +75,7 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
 
             <p
               className={`text-base sm:text-lg leading-relaxed ${
-                isDark ? 'text-slate-300' : 'text-slate-700'
+                isDark ? 'text-slate-300' : 'text-[#334155]'
               }`}
             >
               Founded by <strong>Ken'nyzhae Nathaniel</strong>, Kweenz Dream was born from a deep conviction: every child deserves attentive, joyful, and emotionally enriching care, whether at home, at school dismissal, on long flights, or in the styling chair.
@@ -83,7 +83,7 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
 
             <p
               className={`text-sm sm:text-base leading-relaxed ${
-                isDark ? 'text-slate-400' : 'text-slate-600'
+                isDark ? 'text-slate-300' : 'text-[#475569]'
               }`}
             >
               As both an experienced childcare specialist and a master loctician, Ken'nyzhae brings a uniquely gentle, patient touch. Parents rely on her 24/7 on-call dependability, knowing their children's safety, homework, healthy routines, and natural hair are nurtured with unmatched excellence.
@@ -94,16 +94,16 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-colors ${
                   isDark
-                    ? 'bg-purple-950/40 border-purple-500/20'
-                    : 'bg-white/80 border-purple-200 shadow-sm'
+                    ? 'bg-[#061833]/85 border-[#d4af37]/25'
+                    : 'bg-white border-[#d4af37]/35 shadow-sm'
                 }`}
               >
-                <ShieldCheck className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-5 h-5 text-[#dfb75c] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
                     CPR & First-Aid Prepared
                   </h4>
-                  <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                     Trained for rapid, calm emergency response and child safety.
                   </p>
                 </div>
@@ -112,16 +112,16 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-colors ${
                   isDark
-                    ? 'bg-purple-950/40 border-purple-500/20'
-                    : 'bg-white/80 border-purple-200 shadow-sm'
+                    ? 'bg-[#061833]/85 border-[#d4af37]/25'
+                    : 'bg-white border-[#d4af37]/35 shadow-sm'
                 }`}
               >
-                <Award className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <Award className="w-5 h-5 text-[#dfb75c] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
                     Passport Travel Ready
                   </h4>
-                  <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                     Experienced in airport transit, airline gate navigation, and resort care.
                   </p>
                 </div>
@@ -130,16 +130,16 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-colors ${
                   isDark
-                    ? 'bg-purple-950/40 border-purple-500/20'
-                    : 'bg-white/80 border-purple-200 shadow-sm'
+                    ? 'bg-[#061833]/85 border-[#d4af37]/25'
+                    : 'bg-white border-[#d4af37]/35 shadow-sm'
                 }`}
               >
-                <Heart className="w-5 h-5 text-pink-400 shrink-0 mt-0.5" />
+                <Heart className="w-5 h-5 text-[#dfb75c] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
                     Tender-Head Hair Care
                   </h4>
-                  <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                     Zero painful tension for kids' locs, retwists, and protective braids.
                   </p>
                 </div>
@@ -148,16 +148,16 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
               <div
                 className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-colors ${
                   isDark
-                    ? 'bg-purple-950/40 border-purple-500/20'
-                    : 'bg-white/80 border-purple-200 shadow-sm'
+                    ? 'bg-[#061833]/85 border-[#d4af37]/25'
+                    : 'bg-white border-[#d4af37]/35 shadow-sm'
                 }`}
               >
-                <Star className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
+                <Star className="w-5 h-5 text-[#dfb75c] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                  <h4 className={`text-xs font-bold ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
                     24/7 On-Call Flexibility
                   </h4>
-                  <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-[11px] ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                     Ready when you need emergency babysitting or last-minute coverage.
                   </p>
                 </div>
@@ -168,7 +168,7 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
                 onClick={onOpenBooking}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-sm shadow-lg shadow-cyan-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-sm shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 cursor-pointer"
               >
                 Schedule A Free Meet & Greet
               </button>
@@ -177,11 +177,11 @@ export const AboutFounder: React.FC<AboutFounderProps> = ({ onOpenBooking }) => 
                 href="tel:3054096788"
                 className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm border transition-all cursor-pointer ${
                   isDark
-                    ? 'bg-purple-900/60 hover:bg-purple-800 text-white border-purple-500/40'
-                    : 'bg-purple-100 hover:bg-purple-200 text-purple-950 border-purple-300'
+                    ? 'bg-[#071c38] hover:bg-[#0c2a52] text-[#f3d078] border-[#d4af37]/40'
+                    : 'bg-[#faf8f5] hover:bg-[#f1ebe0] text-[#04142b] border-[#d4af37]/40'
                 }`}
               >
-                <Phone className="w-4 h-4 text-cyan-400" />
+                <Phone className="w-4 h-4 text-[#d4af37]" />
                 <span>Call Directly: (305) 409-6788</span>
               </a>
             </div>

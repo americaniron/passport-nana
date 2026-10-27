@@ -59,20 +59,20 @@ export const TestimonialsSection: React.FC = () => {
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
               isDark
-                ? 'bg-cyan-950/80 border-cyan-400/30 text-cyan-300'
-                : 'bg-purple-100 border-purple-300 text-purple-900'
+                ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
             }`}
           >
-            <Heart className="w-3.5 h-3.5 text-pink-400" /> Real Parent Experiences
+            <Heart className="w-3.5 h-3.5 text-[#dfb75c]" /> Real Parent Experiences
           </div>
           <h2
             className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
-              isDark ? 'text-white' : 'text-slate-950'
+              isDark ? 'text-white' : 'text-[#04142b]'
             }`}
           >
             Loved By Families Across the Nation
           </h2>
-          <p className={`text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+          <p className={`text-base sm:text-lg ${isDark ? 'text-slate-300' : 'text-[#334155]'}`}>
             Hear why parents and guardians call Ken’nyzhae "Nana" and their family's indispensable secret weapon.
           </p>
         </div>
@@ -83,27 +83,27 @@ export const TestimonialsSection: React.FC = () => {
               key={idx}
               className={`p-6 rounded-3xl border transition-all flex flex-col justify-between space-y-4 shadow-xl ${
                 isDark
-                  ? 'bg-[#14062f]/85 border-purple-500/30 hover:border-cyan-400/40 text-slate-200'
-                  : 'bg-white/90 border-purple-200 hover:border-purple-400 text-slate-800 shadow-purple-100/70'
+                  ? 'bg-[#061833]/90 border-[#d4af37]/30 hover:border-[#dfb75c] text-slate-200'
+                  : 'bg-white/95 border-[#d4af37]/35 hover:border-[#b8860b] text-[#04142b] shadow-amber-900/5'
               }`}
             >
               <div className="space-y-3 text-left">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1 text-amber-400">
+                  <div className="flex items-center gap-1 text-[#dfb75c]">
                     {[...Array(rev.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400" />
+                      <Star key={i} className="w-4 h-4 fill-[#dfb75c]" />
                     ))}
                   </div>
                   <Quote
                     className={`w-5 h-5 ${
-                      isDark ? 'text-purple-400/40' : 'text-purple-300'
+                      isDark ? 'text-[#d4af37]/40' : 'text-[#d4af37]/40'
                     }`}
                   />
                 </div>
 
                 <p
                   className={`text-xs sm:text-sm leading-relaxed italic ${
-                    isDark ? 'text-slate-200' : 'text-slate-700'
+                    isDark ? 'text-slate-200' : 'text-[#334155]'
                   }`}
                 >
                   "{rev.comment}"
@@ -112,22 +112,22 @@ export const TestimonialsSection: React.FC = () => {
 
               <div
                 className={`pt-4 border-t text-left space-y-1 ${
-                  isDark ? 'border-purple-500/20' : 'border-purple-100'
+                  isDark ? 'border-[#d4af37]/20' : 'border-[#d4af37]/20'
                 }`}
               >
                 <div
                   className={`text-sm font-bold flex items-center gap-1.5 ${
-                    isDark ? 'text-white' : 'text-slate-950'
+                    isDark ? 'text-white' : 'text-[#04142b]'
                   }`}
                 >
                   <span>{rev.name}</span>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#dfb75c]" />
                 </div>
-                <div className="text-[11px] text-pink-500 font-semibold">{rev.role}</div>
+                <div className="text-[11px] text-[#dfb75c] font-semibold">{rev.role}</div>
                 <div className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                   {rev.location}
                 </div>
-                <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium">
+                <div className="text-[10px] text-[#dfb75c] font-medium">
                   {rev.service}
                 </div>
               </div>

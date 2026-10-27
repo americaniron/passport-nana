@@ -9,6 +9,7 @@ import {
   Droplets,
   HelpCircle,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface HairCareAdvisorModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
   onClose,
   onOpenBooking,
 }) => {
+  const { isDark } = useTheme();
   const [hairType, setHairType] = useState<string>('4C (Tight Coils)');
   const [locStage, setLocStage] = useState<string>('Budding / Teen (3-12 months)');
   const [scalpCondition, setScalpCondition] = useState<string>('Dry & needs moisture hydration');
@@ -68,34 +70,48 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl my-8 rounded-3xl bg-[#12042b] border border-cyan-400/40 p-6 sm:p-8 text-white shadow-2xl">
+      <div
+        className={`relative w-full max-w-2xl my-8 rounded-3xl border-2 p-6 sm:p-8 shadow-2xl transition-all ${
+          isDark
+            ? 'bg-[#041226] border-[#d4af37]/60 text-white'
+            : 'bg-white border-[#d4af37]/50 text-[#04142b]'
+        }`}
+      >
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full bg-purple-950 text-slate-300 hover:text-white hover:bg-purple-900 border border-purple-500/30 transition-all"
+          className={`absolute top-5 right-5 p-2 rounded-full border transition-all cursor-pointer ${
+            isDark
+              ? 'bg-[#071c38] text-slate-300 hover:text-white border-[#d4af37]/30'
+              : 'bg-slate-100 text-[#04142b] hover:bg-slate-200 border-slate-300'
+          }`}
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="space-y-1 text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-950 border border-pink-400/30 text-pink-300 text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4af37]/20 border border-[#d4af37]/40 text-[#dfb75c] text-xs font-bold uppercase tracking-wider">
             <Scissors className="w-3.5 h-3.5" /> AI Loc & Crown Advisor
           </div>
-          <h3 className="text-2xl sm:text-3xl font-black font-display text-white">
+          <h3 className="text-2xl sm:text-3xl font-black font-display">
             Personalized Loc & Scalp Diagnostic
           </h3>
-          <p className="text-xs sm:text-sm text-slate-300">
+          <p className="text-xs sm:text-sm opacity-85">
             Tell us about your hair texture, loc maturity, and scalp condition to receive tailored maintenance guidance and appointment prep tips.
           </p>
         </div>
 
         {adviceResult ? (
           <div className="mt-6 space-y-6 text-left">
-            <div className="p-5 rounded-2xl bg-purple-950/70 border border-cyan-400/30 space-y-3">
-              <div className="flex items-center gap-2 text-cyan-300 font-bold text-sm">
-                <Sparkles className="w-4 h-4 text-cyan-400" />
+            <div
+              className={`p-5 rounded-2xl border space-y-3 ${
+                isDark ? 'bg-[#061833] border-[#d4af37]/35' : 'bg-[#faf8f5] border-[#d4af37]/35'
+              }`}
+            >
+              <div className="flex items-center gap-2 text-[#dfb75c] font-bold text-sm">
+                <Sparkles className="w-4 h-4 text-[#dfb75c]" />
                 <span>Loctician Care Assessment</span>
               </div>
-              <div className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line">
+              <div className="text-xs sm:text-sm leading-relaxed whitespace-pre-line opacity-90">
                 {adviceResult}
               </div>
             </div>
@@ -104,7 +120,11 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
               <button
                 type="button"
                 onClick={() => setAdviceResult(null)}
-                className="px-4 py-2.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-slate-300 text-xs font-semibold border border-purple-500/30"
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold border cursor-pointer ${
+                  isDark
+                    ? 'bg-[#071c38] hover:bg-[#0c2a52] text-slate-300 border-[#d4af37]/30'
+                    : 'bg-slate-100 hover:bg-slate-200 text-[#04142b] border-slate-300'
+                }`}
               >
                 Change Inputs
               </button>
@@ -116,7 +136,11 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
                     onClose();
                     onOpenBooking('hair-consultation');
                   }}
-                  className="px-4 py-2.5 rounded-xl bg-purple-900 hover:bg-purple-800 text-cyan-300 text-xs font-bold border border-purple-500/40"
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold border cursor-pointer ${
+                    isDark
+                      ? 'bg-[#071c38] text-[#dfb75c] border-[#d4af37]/40'
+                      : 'bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40'
+                  }`}
                 >
                   Book $25 Consultation
                 </button>
@@ -127,7 +151,7 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
                     onClose();
                     onOpenBooking('locks-wash-retwist-style');
                   }}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/20"
+                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-xs shadow-md shadow-amber-500/20 cursor-pointer"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Book Wash & Retwist ($50+)</span>
@@ -139,11 +163,15 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
           <form onSubmit={handleGenerateAdvice} className="mt-6 space-y-4 text-left">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Hair Type</label>
+                <label className="block text-xs font-bold mb-1 opacity-90">Hair Type</label>
                 <select
                   value={hairType}
                   onChange={(e) => setHairType(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                    isDark
+                      ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                  }`}
                 >
                   <option value="4C (Tight Coils)">4C (Tight Coils)</option>
                   <option value="4B (Z-pattern Coils)">4B (Z-pattern Coils)</option>
@@ -154,13 +182,17 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold mb-1 opacity-90">
                   Loc Maturity / Style Stage
                 </label>
                 <select
                   value={locStage}
                   onChange={(e) => setLocStage(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                    isDark
+                      ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                  }`}
                 >
                   <option value="Starter Locs (0-3 months)">Starter Locs (0-3 months)</option>
                   <option value="Budding / Teen (3-12 months)">
@@ -175,13 +207,17 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold mb-1 opacity-90">
                   Current Scalp State
                 </label>
                 <select
                   value={scalpCondition}
                   onChange={(e) => setScalpCondition(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                    isDark
+                      ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                  }`}
                 >
                   <option value="Dry & needs moisture hydration">
                     Dry & needs moisture hydration
@@ -196,13 +232,17 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
+                <label className="block text-xs font-bold mb-1 opacity-90">
                   Desired Style or Goal
                 </label>
                 <select
                   value={desiredService}
                   onChange={(e) => setDesiredService(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-purple-950/60 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                  className={`w-full px-3 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                    isDark
+                      ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                      : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                  }`}
                 >
                   <option value="Wash, Retwist & Style">Wash, Retwist & Style ($50+)</option>
                   <option value="Freestyle Braids">Freestyle Braids ($100)</option>
@@ -215,7 +255,7 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1">
+              <label className="block text-xs font-bold mb-1 opacity-90">
                 Any specific questions or concerns? (Optional)
               </label>
               <input
@@ -223,7 +263,11 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="e.g. Length is past shoulders; had starter coils 6 months ago; want gentle tension."
-                className="w-full px-3 py-2 rounded-xl bg-purple-950/60 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+                className={`w-full px-3 py-2 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                  isDark
+                    ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                    : 'bg-[#faf8f5] border-[#d4af37]/35 text-[#04142b]'
+                }`}
               />
             </div>
 
@@ -231,23 +275,27 @@ export const HairCareAdvisorModal: React.FC<HairCareAdvisorModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-slate-300 text-xs font-semibold border border-purple-500/30"
+                className={`px-4 py-2.5 rounded-xl text-xs font-semibold border cursor-pointer ${
+                  isDark
+                    ? 'bg-[#071c38] hover:bg-[#0c2a52] text-slate-300 border-[#d4af37]/30'
+                    : 'bg-slate-100 hover:bg-slate-200 text-[#04142b] border-slate-300'
+                }`}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold text-xs shadow-lg shadow-pink-500/20 disabled:opacity-50"
+                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-xs shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#041226]" />
                     <span>Analyzing Crown...</span>
                   </>
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 text-[#041226]" />
                     <span>Get Loctician Advice</span>
                   </>
                 )}

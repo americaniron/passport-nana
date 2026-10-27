@@ -5,6 +5,7 @@ import {
   Droplets,
   Wind,
   Calendar,
+  CheckCircle2,
 } from 'lucide-react';
 import { SectionBackgroundVideo } from './SectionBackgroundVideo.tsx';
 import { useTheme } from '../context/ThemeContext.tsx';
@@ -62,51 +63,51 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
           <div
             className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-semibold uppercase tracking-wider ${
               isDark
-                ? 'bg-pink-950/80 border-pink-400/30 text-pink-300'
-                : 'bg-pink-100 border-pink-300 text-pink-900'
+                ? 'bg-[#071c38]/90 border-[#d4af37]/40 text-[#f3d078]'
+                : 'bg-white border-[#d4af37]/40 text-[#04142b] shadow-sm'
             }`}
           >
-            <Scissors className="w-3.5 h-3.5" /> Gentle Kids & Adult Loctician
+            <Scissors className="w-3.5 h-3.5 text-[#d4af37]" /> Gentle Kids & Adult Loctician
           </div>
           <h2
             className={`text-3xl sm:text-4xl lg:text-5xl font-black font-display ${
-              isDark ? 'text-white' : 'text-slate-950'
+              isDark ? 'text-white' : 'text-[#04142b]'
             }`}
           >
             Crown Care: Locks, Retwists & Freestyle Braids
           </h2>
-          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-slate-700 font-medium'}>
-            Precision root work, crisp parting grids, and nurturing scalp health. We believe in gentle hands, healthy follicles, and lasting style.
+          <p className={isDark ? 'text-base sm:text-lg text-slate-300' : 'text-base sm:text-lg text-[#334155] font-medium'}>
+            Clean. Neat. Confident. Travel-ready styles. Precision root work, crisp parting grids, and nurturing scalp health.
           </p>
         </div>
 
         {/* Real Client Showcase & Photo Gallery */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16">
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
-            <div className="group relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-xl bg-purple-950">
+            <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
               <img
                 src="/assets/aistudio/ZTZXKCZ3HHQ7UEDL7JIJ475M_54c67c2a.webp"
                 alt="Client Locs Parting & Clean Grid Work"
                 className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
               <div className="absolute bottom-3 left-3 right-3 text-left">
-                <span className="text-[11px] font-bold text-cyan-300 bg-purple-950/90 px-2.5 py-0.5 rounded-full border border-cyan-400/30">
+                <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
                   Precision Parting Grid
                 </span>
                 <p className="text-xs text-white font-semibold mt-1">Immaculate scalp lines & palm retwist</p>
               </div>
             </div>
 
-            <div className="group relative rounded-2xl overflow-hidden border border-purple-500/40 shadow-xl bg-purple-950">
+            <div className="group relative rounded-2xl overflow-hidden border-2 border-[#d4af37]/50 shadow-xl bg-[#041226]">
               <img
                 src="/assets/aistudio/PSMWGZA2JPS7CFRDUK5AHEIW_0a7cd65a.webp"
                 alt="Close-up of Locs Retwist & Healthy Scalp"
                 className="w-full h-64 sm:h-72 object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#041226]/95 via-transparent to-transparent opacity-85" />
               <div className="absolute bottom-3 left-3 right-3 text-left">
-                <span className="text-[11px] font-bold text-pink-300 bg-purple-950/90 px-2.5 py-0.5 rounded-full border border-pink-400/30">
+                <span className="text-[11px] font-bold text-[#f3d078] bg-[#041226]/90 px-2.5 py-0.5 rounded-full border border-[#d4af37]/40">
                   Healthy Root Density
                 </span>
                 <p className="text-xs text-white font-semibold mt-1">Hydrated scalp & zero-tension technique</p>
@@ -119,14 +120,14 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
             <div className="space-y-3">
               <h3
                 className={`text-2xl sm:text-3xl font-black font-display ${
-                  isDark ? 'text-white' : 'text-slate-950'
+                  isDark ? 'text-white' : 'text-[#04142b]'
                 }`}
               >
                 The Signature 5-Step Loc Restoration
               </h3>
               <p
                 className={`text-sm sm:text-base leading-relaxed ${
-                  isDark ? 'text-slate-300' : 'text-slate-700 font-medium'
+                  isDark ? 'text-slate-300' : 'text-[#334155] font-medium'
                 }`}
               >
                 Every loc session with Ken'nyzhae is an all-inclusive wellness ritual. Unlike rush salons, your hair receives meticulous cleansing, deep botanical scalp hydration, and gentle palm rolling so your retwist lasts longer without breakage.
@@ -142,18 +143,18 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
                     key={st.num}
                     className={`p-3.5 rounded-xl border space-y-1 ${
                       isDark
-                        ? 'bg-purple-950/40 border-purple-500/20'
-                        : 'bg-white/80 border-purple-200 shadow-sm'
+                        ? 'bg-[#061833]/85 border-[#d4af37]/25 text-white'
+                        : 'bg-white border-[#d4af37]/35 shadow-sm text-[#04142b]'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-cyan-600 dark:text-cyan-400">{st.num}</span>
-                      <Icon className="w-3.5 h-3.5 text-pink-500" />
-                      <span className={`text-xs font-bold line-clamp-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                      <span className="text-xs font-black text-[#dfb75c]">{st.num}</span>
+                      <Icon className="w-3.5 h-3.5 text-[#d4af37]" />
+                      <span className={`text-xs font-bold line-clamp-1 ${isDark ? 'text-white' : 'text-[#04142b]'}`}>
                         {st.title}
                       </span>
                     </div>
-                    <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                    <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-300' : 'text-[#475569]'}`}>
                       {st.desc}
                     </p>
                   </div>
@@ -163,16 +164,16 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
 
             {/* Quick Pricing Summary & Consultation CTA */}
             <div
-              className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg ${
+              className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg ${
                 isDark
-                  ? 'bg-gradient-to-r from-purple-950/80 to-indigo-950/80 border-cyan-400/30 text-white'
-                  : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 text-slate-900'
+                  ? 'bg-gradient-to-r from-[#071c38] to-[#0b274e] border-[#d4af37]/40 text-white'
+                  : 'bg-gradient-to-r from-white to-[#faf7f0] border-[#d4af37]/45 text-[#04142b]'
               }`}
             >
               <div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Wash, Retwist & Style</div>
-                <div className="text-xl font-black text-cyan-600 dark:text-cyan-300">Starts at $50.00</div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">Final price determined by loc length/condition</div>
+                <div className="text-xs text-slate-400">Wash, Retwist & Style</div>
+                <div className="text-xl font-black text-[#dfb75c]">Starts at $50.00</div>
+                <div className="text-[11px] text-slate-400">Final price determined by loc length/condition</div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -180,17 +181,17 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
                   onClick={onOpenHairAdvisor}
                   className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                     isDark
-                      ? 'bg-purple-900/60 hover:bg-purple-800 text-cyan-300 border-purple-500/40'
-                      : 'bg-white hover:bg-purple-50 text-purple-900 border-purple-300 shadow-sm'
+                      ? 'bg-[#071c38] hover:bg-[#0c2a52] text-[#f3d078] border-[#d4af37]/40'
+                      : 'bg-white hover:bg-[#faf8f5] text-[#04142b] border-[#d4af37]/40 shadow-sm'
                   }`}
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
                   <span>AI Loc Diagnostic</span>
                 </button>
 
                 <button
                   onClick={() => onOpenBooking('locks-wash-retwist-style')}
-                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 text-xs font-bold shadow-md shadow-cyan-500/20 cursor-pointer"
+                  className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] text-xs font-bold shadow-md shadow-amber-500/20 cursor-pointer"
                 >
                   <Calendar className="w-3.5 h-3.5" />
                   <span>Book Locs ($50+)</span>
@@ -201,12 +202,12 @@ export const LocsAndBraidsSection: React.FC<LocsAndBraidsSectionProps> = ({
             <div className={`flex items-center gap-4 text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               <span>
                 Looking for Freestyle Braids?{' '}
-                <strong className={isDark ? 'text-white' : 'text-slate-950'}>$100 flat (6 hrs)</strong>
+                <strong className={isDark ? 'text-white' : 'text-[#04142b]'}>$100 flat (6 hrs)</strong>
               </span>
               <span>•</span>
               <button
                 onClick={() => onOpenBooking('hair-consultation')}
-                className="text-cyan-600 dark:text-cyan-300 hover:underline font-semibold cursor-pointer"
+                className="text-[#dfb75c] hover:underline font-semibold cursor-pointer"
               >
                 Book $25 Consultation
               </button>

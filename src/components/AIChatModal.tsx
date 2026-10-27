@@ -10,10 +10,8 @@ import {
   Calendar,
   Loader2,
   Trash2,
-  ArrowRight,
-  MapPin,
-  ExternalLink,
 } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext.tsx';
 
 interface AIChatModalProps {
   isOpen: boolean;
@@ -26,6 +24,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
   onClose,
   onOpenBooking,
 }) => {
+  const { isDark } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -112,23 +111,39 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative w-full max-w-2xl h-[620px] max-h-[92vh] flex flex-col rounded-3xl bg-[#12042b] border border-cyan-400/40 text-white shadow-2xl overflow-hidden">
+      <div
+        className={`relative w-full max-w-2xl h-[620px] max-h-[92vh] flex flex-col rounded-3xl border-2 shadow-2xl overflow-hidden ${
+          isDark
+            ? 'bg-[#041226] border-[#d4af37]/60 text-white'
+            : 'bg-white border-[#d4af37]/50 text-[#04142b]'
+        }`}
+      >
         {/* Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-purple-950 via-indigo-950 to-cyan-950 border-b border-purple-500/30 flex items-center justify-between">
+        <div
+          className={`p-4 sm:p-5 border-b flex items-center justify-between ${
+            isDark
+              ? 'bg-gradient-to-r from-[#020813] via-[#071c38] to-[#020813] border-[#d4af37]/30 text-white'
+              : 'bg-gradient-to-r from-[#faf8f5] via-white to-[#faf8f5] border-[#d4af37]/30 text-[#04142b]'
+          }`}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-400 to-purple-600 flex items-center justify-center p-0.5 shadow-md shadow-cyan-500/20">
-              <div className="w-full h-full bg-[#14062f] rounded-[14px] flex items-center justify-center text-cyan-300">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#d4af37] via-[#f3d078] to-[#c59b27] flex items-center justify-center p-0.5 shadow-md shadow-amber-500/20">
+              <div
+                className={`w-full h-full rounded-[14px] flex items-center justify-center ${
+                  isDark ? 'bg-[#041226]' : 'bg-white'
+                }`}
+              >
+                <Sparkles className="w-5 h-5 text-[#dfb75c]" />
               </div>
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-white font-display">
+                <h3 className="text-base sm:text-lg font-bold font-display">
                   Nana's AI Care Concierge
                 </h3>
                 <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               </div>
-              <p className="text-[11px] text-cyan-300">
+              <p className="text-[11px] text-[#dfb75c]">
                 24/7 Assistance • Booking & Hair Consultation
               </p>
             </div>
@@ -147,14 +162,22 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                   },
                 ])
               }
-              className="p-2 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-slate-400 hover:text-white border border-purple-500/30 transition-all"
+              className={`p-2 rounded-xl border transition-all ${
+                isDark
+                  ? 'bg-[#071c38] hover:bg-[#0c2a52] text-slate-300 border-[#d4af37]/30'
+                  : 'bg-[#faf8f5] hover:bg-[#f1ebe0] text-[#04142b] border-[#d4af37]/35'
+              }`}
               title="Clear conversation"
             >
               <Trash2 className="w-4 h-4" />
             </button>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-slate-300 hover:text-white border border-purple-500/30 transition-all"
+              className={`p-2 rounded-xl border transition-all ${
+                isDark
+                  ? 'bg-[#071c38] hover:bg-[#0c2a52] text-slate-300 border-[#d4af37]/30'
+                  : 'bg-[#faf8f5] hover:bg-[#f1ebe0] text-[#04142b] border-[#d4af37]/35'
+              }`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -171,7 +194,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                 className={`flex gap-3 text-left ${isUser ? 'justify-end' : 'justify-start'}`}
               >
                 {!isUser && (
-                  <div className="w-8 h-8 rounded-full bg-purple-900 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shrink-0 mt-1">
+                  <div className="w-8 h-8 rounded-full bg-[#061833] border border-[#d4af37]/40 flex items-center justify-center text-[#dfb75c] shrink-0 mt-1">
                     <Bot className="w-4 h-4" />
                   </div>
                 )}
@@ -179,15 +202,17 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                 <div
                   className={`max-w-[85%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed shadow-md ${
                     isUser
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-medium rounded-tr-none'
-                      : 'bg-purple-950/70 border border-purple-500/30 text-slate-200 rounded-tl-none whitespace-pre-line'
+                      ? 'bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] font-semibold rounded-tr-none'
+                      : isDark
+                      ? 'bg-[#061833] border border-[#d4af37]/30 text-slate-200 rounded-tl-none whitespace-pre-line'
+                      : 'bg-[#faf8f5] border border-[#d4af37]/35 text-[#04142b] rounded-tl-none whitespace-pre-line'
                   }`}
                 >
                   {m.content}
 
                   <div
                     className={`text-[10px] mt-1.5 ${
-                      isUser ? 'text-slate-800 text-right' : 'text-slate-400'
+                      isUser ? 'text-[#041226]/80 text-right' : 'text-slate-400'
                     }`}
                   >
                     {m.timestamp}
@@ -195,7 +220,7 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                 </div>
 
                 {isUser && (
-                  <div className="w-8 h-8 rounded-full bg-cyan-400 flex items-center justify-center text-slate-950 shrink-0 mt-1 font-bold text-xs">
+                  <div className="w-8 h-8 rounded-full bg-[#d4af37] flex items-center justify-center text-[#041226] shrink-0 mt-1 font-bold text-xs">
                     <User className="w-4 h-4" />
                   </div>
                 )}
@@ -204,9 +229,9 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
           })}
 
           {isLoading && (
-            <div className="flex gap-3 items-center text-cyan-300 text-xs text-left">
-              <div className="w-8 h-8 rounded-full bg-purple-900 border border-cyan-400/40 flex items-center justify-center">
-                <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+            <div className="flex gap-3 items-center text-[#dfb75c] text-xs text-left">
+              <div className="w-8 h-8 rounded-full bg-[#061833] border border-[#d4af37]/40 flex items-center justify-center">
+                <Loader2 className="w-4 h-4 animate-spin text-[#dfb75c]" />
               </div>
               <span className="italic">Nana Concierge is thinking...</span>
             </div>
@@ -215,12 +240,20 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
         </div>
 
         {/* Suggestion Chips */}
-        <div className="px-4 py-2 border-t border-purple-500/20 bg-[#0e0224] flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar">
+        <div
+          className={`px-4 py-2 border-t flex items-center gap-1.5 overflow-x-auto text-[11px] no-scrollbar ${
+            isDark ? 'border-[#d4af37]/20 bg-[#030e22]' : 'border-[#d4af37]/25 bg-[#faf8f5]'
+          }`}
+        >
           {suggestionChips.map((chip, idx) => (
             <button
               key={idx}
               onClick={() => handleSendMessage(chip)}
-              className="shrink-0 px-2.5 py-1 rounded-full bg-purple-950 hover:bg-purple-900 text-cyan-300 border border-purple-500/30 transition-all hover:scale-105"
+              className={`shrink-0 px-2.5 py-1 rounded-full border transition-all hover:scale-105 cursor-pointer ${
+                isDark
+                  ? 'bg-[#071c38] text-[#f3d078] border-[#d4af37]/30 hover:bg-[#0c2a52]'
+                  : 'bg-white text-[#04142b] border-[#d4af37]/35 hover:bg-[#faf8f5]'
+              }`}
             >
               {chip}
             </button>
@@ -228,7 +261,11 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 sm:p-4 border-t border-purple-500/30 bg-[#0f0326] space-y-2">
+        <div
+          className={`p-3 sm:p-4 border-t space-y-2 ${
+            isDark ? 'border-[#d4af37]/30 bg-[#030d1e]' : 'border-[#d4af37]/30 bg-[#fbf9f5]'
+          }`}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -241,12 +278,16 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask anything about babysitting, passport travel, or locs..."
-              className="flex-1 px-4 py-2.5 rounded-xl bg-purple-950/80 border border-purple-500/40 text-white text-xs sm:text-sm focus:outline-none focus:border-cyan-400"
+              className={`flex-1 px-4 py-2.5 rounded-xl border text-xs sm:text-sm focus:outline-none focus:border-[#d4af37] ${
+                isDark
+                  ? 'bg-[#061833] border-[#d4af37]/35 text-white'
+                  : 'bg-white border-[#d4af37]/35 text-[#04142b]'
+              }`}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold text-xs disabled:opacity-40 transition-all"
+              className="p-2.5 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] hover:brightness-105 text-[#041226] font-bold text-xs disabled:opacity-40 transition-all cursor-pointer"
               aria-label="Send message"
             >
               <Send className="w-4 h-4" />
@@ -260,16 +301,16 @@ export const AIChatModal: React.FC<AIChatModalProps> = ({
                 onClose();
                 onOpenBooking();
               }}
-              className="text-cyan-300 hover:underline flex items-center gap-1 font-semibold"
+              className="text-[#dfb75c] hover:underline flex items-center gap-1 font-semibold cursor-pointer"
             >
               <Calendar className="w-3 h-3" />
               <span>Open Online Booking</span>
             </button>
             <a
               href="tel:3054096788"
-              className="text-slate-300 hover:text-white flex items-center gap-1"
+              className="opacity-90 hover:opacity-100 flex items-center gap-1"
             >
-              <Phone className="w-3 h-3 text-cyan-400" />
+              <Phone className="w-3 h-3 text-[#dfb75c]" />
               <span>Call: 305-409-6788</span>
             </a>
           </div>

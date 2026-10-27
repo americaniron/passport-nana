@@ -50,8 +50,8 @@ export default function App() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950 transition-colors duration-300 ${
-        isDark ? 'bg-[#0b021a] text-slate-100' : 'bg-[#faf8fd] text-slate-900'
+      className={`min-h-screen flex flex-col font-sans selection:bg-[#d4af37] selection:text-[#041226] transition-colors duration-300 ${
+        isDark ? 'bg-[#030d1e] text-slate-100' : 'bg-[#faf8f5] text-[#04142b]'
       }`}
     >
       {/* Navigation */}
@@ -103,21 +103,25 @@ export default function App() {
         {/* Floating Text Us Button (matching original website screenshot) */}
         <a
           href="sms:3054096788"
-          className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full bg-white text-slate-900 font-bold text-xs sm:text-sm shadow-xl hover:bg-slate-100 hover:scale-105 active:scale-95 transition-all border border-slate-200"
+          className={`flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full font-bold text-xs sm:text-sm shadow-xl hover:scale-105 active:scale-95 transition-all border ${
+            isDark
+              ? 'bg-[#071c38] text-white hover:bg-[#0c2a52] border-[#d4af37]/40 shadow-black/40'
+              : 'bg-white text-[#04142b] hover:bg-[#f8f5ee] border-[#d4af37]/40 shadow-amber-900/10'
+          }`}
           title="Text Ken'nyzhae directly"
         >
-          <Phone className="w-3.5 h-3.5 text-purple-700" />
+          <Phone className="w-3.5 h-3.5 text-[#d4af37]" />
           <span>Text us</span>
         </a>
 
         {/* Floating AI Concierge Launcher */}
         <button
           onClick={() => setChatOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 text-white font-bold text-xs sm:text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all border border-cyan-400/50"
+          className="flex items-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-r from-[#d4af37] via-[#f3d078] to-[#c59b27] text-[#041226] font-extrabold text-xs sm:text-sm shadow-2xl hover:scale-105 active:scale-95 transition-all border border-[#f5d77f]/60"
           title="Chat with Nana's AI Care Concierge"
           aria-label="Open AI Concierge Chat"
         >
-          <Sparkles className="w-3.5 h-3.5 text-cyan-300 animate-spin" style={{ animationDuration: '8s' }} />
+          <Sparkles className="w-3.5 h-3.5 text-[#041226] animate-spin" style={{ animationDuration: '8s' }} />
           <span className="hidden sm:inline">Ask Nana AI</span>
           <span className="sm:hidden font-bold">AI</span>
         </button>
