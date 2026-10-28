@@ -59,6 +59,8 @@ export interface GroundedPlace {
   description?: string;
   category?: string;
   rating?: number;
+  kidHighlight?: string;
+  parentTip?: string;
 }
 
 export interface ChatMessage {
