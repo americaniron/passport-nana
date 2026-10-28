@@ -59,8 +59,14 @@ export interface GroundedPlace {
   description?: string;
   category?: string;
   rating?: number;
+  reviewsCount?: number;
+  image?: string;
+  badge?: string;
+  priceLevel?: string;
+  openStatus?: string;
   kidHighlight?: string;
   parentTip?: string;
+  coordinates?: { lat: number; lng: number };
 }
 
 export interface ChatMessage {
